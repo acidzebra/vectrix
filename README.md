@@ -13,3 +13,9 @@ a 24/7 Anki/DDL Vector console-oriented Python-based robot monitor which can opt
 - optionally improves Vector's idle behavior (sitting still for minutes) by: mixing animations, going for a drive, rolling cubes and more
 - battery profiling: log voltages to csv file, records charge/discharge cycle times
 - many more options to configure
+
+# Screenshot (may be out of date)
+[![screenshot (may be out of date)](https://i.imgur.com/3SiETdd.jpg)
+
+# Video demo (old version)
+[![Demo video (old version)](https://img.youtube.com/vi/o9g9NPUKeCg/0.jpg)](https://www.youtube.com/watch?v=o9g9NPUKeCg)
