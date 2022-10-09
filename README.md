@@ -1,5 +1,5 @@
 # Vectrix
-a 24/7 Anki/DDL Vector console-based robot monitor which can optionally keep Vector active and improve his idle behavior, has extensive logging options, battery profiling, and more!
+a 24/7 Anki/DDL Vector console-oriented Python-based robot monitor which can optionally keep Vector active and improve his idle behavior, has extensive logging options, battery profiling, and more!
 
 # Requirements
 - Windows, Mac, or Linux system
