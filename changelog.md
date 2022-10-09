@@ -1,6 +1,6 @@
 Changelog
 
-note: earlier versions of Vectix (named VectorDiag) are available here: gist.github.com/acidzebra/74d7b288b267d7fcea8c33358d4c2e78
+note: earlier versions of Vectix (named VectorDiag) are available here: https://gist.github.com/acidzebra/74d7b288b267d7fcea8c33358d4c2e78
 
 0.9.5 
 - (minor) new switch rainbow_eyes - will turn eyes blue when VecTrix is active, yellow in case of error (color will revert to normal when Vectrix is not active)
