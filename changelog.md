@@ -1,12 +1,16 @@
 Changelog
 
-note: earlier versions of Vectix (named VectorDiag) are available here: https://gist.github.com/acidzebra/74d7b288b267d7fcea8c33358d4c2e78
+note: earlier versions of Vectix (named VectorDiag) are available here: gist.github.com/acidzebra/74d7b288b267d7fcea8c33358d4c2e78
 
 0.9.5 (currently in beta)
 - renamed VectorDiag to Vectrix as it's grown far beyond just diagnostics.
 - (minor) new switch rainbow_eyes - will turn eyes blue when VecTrix is active, yellow in case of error (color will revert to normal when Vectrix is not active)
 - (minor) new routines for driving to random pose and looking around
 - (minor) reanimator cleanup
+- (minor) new vector_name variable - will turn log entries into a more personalized version
+- (minor) added Discord logging option
+- (minor) reworked log messages to incorporate changes above
+- (minor) added timer doubling on reconnect (30 sec, 1 min, 2 min, 4 min... up to 1 hour) to reduce logspam when Vector goes offline due to running out of battery
 
 0.9.4 
 - (minor) moved logging function to its own thread and implemented logging queue

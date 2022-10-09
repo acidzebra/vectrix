@@ -6,10 +6,12 @@ vt_version = "0.9.5-BETA"
 # ROBOT SERIAL NUMBER, YOU NEED TO EDIT THIS AND REPLACE WITH YOUR ROBOT'S SERIAL NUMBER
 robot_serial = "00902b5d"
 #
-# UI SWITCHES, DEFAULTS ARE FINE, OPTIONALLY CHANGE AS DESIRED
+# MANY SWITCHES, DEFAULTS ARE FINE, CHANGE AS DESIRED
+vector_name                  = "Vector"                 # vector_name will be used in most log entries for a more personalized log
 refresh_rate                 = 0.1                      # time in seconds to wait before program refreshes UI. Sane values are somewhere between 0.1 and 2. Too fast might crash Vector (=needs reboot), too slow makes this program useless, default value 0.1
+headless                     = False                    # whether headless mode (=no UI) is enabled, default is False
 # optional logging switches, the defaults are usually fine, change as suits you. Accepted values are described in comments. Don't turn everything on, it will make the program useless and slow.
-header_logging               = True                     # whether to log startup info about Vectrix and Vector (version, IP, refresh rate, etc), default = True
+header_logging               = False                    # whether to log startup info about Vectrix and Vector (version, IP, refresh rate, etc), default = True
 connect_logging              = True                     # logs connection and disconnection events, default is True
 speech_logging               = True                     # logs wake word and user intent (but user intent currently not working), default is True 
 dock_events_logging          = True                     # logs events like getting on/off charger and continuous cycle info, default is True
@@ -50,9 +52,12 @@ reanimator_max_distance      = 300                      # max distance in mm tha
 datestamp_log_files          = True                     # will create new log files each day with name [currentdate]+[filename] for logfile and battery csv log (if enabled), default = True
 file_logging                 = True                     # whether log entries should also be written to file; if set to 1 a logfile  will be created (default name "vectrix.log"), config below, default is True
 battery_csv_logging          = False                    # will log voltage values in csv format to separate CSV file, useful for battery profiling, default is False
-battery_csv_logging_interval = 30                       # how often a new line will be added to the log file in seconds, default is 15
+battery_csv_logging_interval = 30                       # how often a new line will be added to the log file in seconds, default is 30
 logfile                      = "vectrix.log"            # (path to) logfile, make sure you can access this location, I'm not going to waste time writing file/directory exceptions, default = "vectrix.log"
 battery_csv_filename         = "vectorbatterylog.csv"   # name of the CSV file to write/append to, default is "vectorbatterylog.csv"
+# discord logging
+discord_logging              = False                    # will log to a Discord webhook if enabled, default is False
+discord_webhook              = ""                       # discord webhook URL
 # misc switches
 rainbow_eyes                 = True                     # will color Vector's eyes when Vectrix is active, blue = busy, yellow = timeout, green = all ok. This is only when Vectrix is controlling Vector and not permanent, default = True
 eye_hue_yellow               = 0.11                     # eye color used for timeout events, default is 0.11
@@ -60,7 +65,6 @@ eye_hue_red                  = 0                        # eye color used for "ba
 eye_hue_green                = 0.21                     # eye color used for "all ok", default is 0.21
 eye_hue_blue                 = 0.57                     # eye color used for "busy doing a thing", default is 0.57
 eye_hue_purple               = 0.85                     # eye color not currently used, default is 0.85
-headless                     = False                    # whether headless mode (=no UI) is enabled, default is False
 flash_borders_on_max         = False                    # will turn borders of gyro/accel/wheel graphs red when readings hit max (0 or 100), default is False
 quit_on_error                = False                    # the default behavior of Vectrix is to try to endlessly reconnect on error/disconnect, set this to true if you want the program to exit instead, default is False
 show_viewer                  = False                    # if you're running this program on a GUI and have the viewer configured, you can enable it here, default is False
@@ -115,7 +119,9 @@ except:
     print("!!! If it is installed and configured, make sure you are launching from an environment that knows where these libraries are")
     print("!!! Ex: if you're using Windows, try using a command prompt with 'python vectrix.py' !!!")
     exit()
-   
+# only import when logging to discord
+if discord_logging:
+    import json, requests
 # --- END OF LIBRARY IMPORT SECTION ---
 # --- START OF VARIABLES SECTION ---
 # --- In which we define the robot, ui, and various states for later use ---
@@ -301,8 +307,6 @@ robot_control_blocking          = 0
 go_animate_chance               = 65
 go_drive_chance                 = 25
 go_cube_chance                  = 10
-# reanimator list without anim_timer_beep_01, in casse you find the beep distracting (it amuses me)
-#anim_list                      = ["anim_cube_psychic_01","anim_cube_success_getout_01","anim_cubeconnection_connectionfailure_01","anim_cubeconnection_connectionlost_01","anim_cubeconnection_connectionsuccess_01","anim_cubedocking_fail_01","anim_explorer_huh_close_01","anim_explorer_huh_far_01","anim_eyecontact_giggle_01","anim_eyecontact_giggle_01_head_angle_20","anim_eyecontact_giggle_01_head_angle_-20","anim_eyecontact_giggle_01_head_angle_40","anim_findcube_request_01","anim_fistbump_success_01","anim_fistbump_success_02","anim_fistbump_success_03","anim_freeplay_reacttoface_identified_01","anim_freeplay_reacttoface_identified_02","anim_freeplay_reacttoface_identified_03","anim_greeting_goodbye_01","anim_greeting_goodbye_02","anim_greeting_goodmorning_01","anim_greeting_goodmorning_02","anim_greeting_hello_01","anim_greeting_hello_02","anim_handdetection_reaction_01","anim_handdetection_reaction_02","anim_heldonpalm_edge_nervous_01","anim_heldonpalm_edge_relaxed_01","anim_heldonpalm_jolt_01","anim_heldonpalm_looking_nervous_01","anim_heldonpalm_nestling_01","anim_heldonpalm_pickup_nervous_01","anim_heldonpalm_pickup_relaxed_01","anim_heldonpalm_putdown_nervous_01","anim_heldonpalm_putdown_relaxed_01","anim_heldonpalm_relaxed_idle_01","anim_heldonpalm_transition2relaxed_01","anim_keepaway_backup_01","anim_keepaway_bored_idle_01","anim_keepaway_bored_idle_02","anim_keepaway_getin_focus_01","anim_keepaway_getout_engaged_01","anim_keepaway_getout_frustrated_01","anim_keepaway_getout_loseinterest_01","anim_keepaway_getout_satisfied_01","anim_keepaway_getreadyset_01","anim_keepaway_hit_reaction_01","anim_keepaway_idle_glance_01","anim_keepaway_idle_side_02","anim_keepaway_idleliftdown_01","anim_keepaway_idleliftdown_02","anim_keepaway_miss_reaction_01","anim_keepaway_pounce_mousetrap_04","anim_keepaway_pounce_quick_01","anim_keepaway_pounce_shake_02","anim_keepaway_pounce_slow_05","anim_onboarding_cube_psychic_01","anim_onboarding_cube_reacttocube","anim_onboarding_cube_success_getout_01","anim_onboarding_reacttoface_happy_01","anim_onboarding_reacttoface_happy_01_head_angle_20","anim_onboarding_reacttoface_happy_01_head_angle_-20","anim_onboarding_reacttoface_happy_01_head_angle_40","anim_petting_blissloop_01","anim_petting_blissloop_02","anim_petting_blissloop_03","anim_petting_lvl1_01","anim_petting_lvl2_01","anim_petting_lvl3_01","anim_petting_lvl4_01","anim_photo_focus_01","anim_photo_shutter_01","anim_pounce_01","anim_pounce_02","anim_pounce_03","anim_pounce_04","anim_pounce_fail_01","anim_pounce_fail_02","anim_pounce_fail_03","anim_pounce_fail_04","anim_pounce_long_01","anim_pounce_success_01","anim_pounce_success_02","anim_pounce_success_03","anim_pounce_success_04","anim_reacttoblock_dropfail_01","anim_reacttoblock_dropfail_02","anim_reacttoblock_dropsuccess_01","anim_reacttoblock_focusedeyes_01","anim_reacttoblock_frustrated_01","anim_reacttoblock_happydetermined_01","anim_reacttoblock_happydetermined_02","anim_reacttoblock_success_01","anim_reacttoface_unidentified_01_head_angle_20","anim_reacttoface_unidentified_01_head_angle_-20","anim_reacttoface_unidentified_01_head_angle_40","anim_reacttoface_unidentified_02_head_angle_20","anim_reacttoface_unidentified_02_head_angle_40","anim_reacttoface_unidentified_03_head_angle_20","anim_reacttoface_unidentified_03_head_angle_-20","anim_reacttohabitat_subtle_01","anim_referencing_curious_01","anim_referencing_curious_01_head_angle_20","anim_referencing_curious_01_head_angle_-20","anim_referencing_curious_01_head_angle_40","anim_referencing_giggle_01","anim_referencing_giggle_01_head_angle_20","anim_referencing_giggle_01_head_angle_-20","anim_referencing_giggle_01_head_angle_40","anim_referencing_smile_01","anim_referencing_smile_01_head_angle_20","anim_referencing_smile_01_head_angle_-20","anim_referencing_smile_01_head_angle_40","anim_referencing_squint_01","anim_referencing_squint_01_head_angle_20","anim_referencing_squint_01_head_angle_-20","anim_referencing_squint_01_head_angle_40","anim_referencing_squint_02","anim_referencing_squint_02_head_angle_20","anim_referencing_squint_02_head_angle_-20","anim_referencing_squint_02_head_angle_40","anim_sudden_obstacle_react_01","anim_sudden_obstacle_react_02","anim_timer_emote_01","anim_triple_backup","anim_vc_alrighty_01","anim_vc_laser_lookdown_01","anim_vc_reaction_nofaceheardyou_01"]
 # reanimator list with anim_timer_beep_01 
 anim_list                       = ["anim_cube_psychic_01","anim_cube_success_getout_01","anim_cubeconnection_connectionfailure_01","anim_cubeconnection_connectionlost_01","anim_cubeconnection_connectionsuccess_01","anim_cubedocking_fail_01","anim_explorer_huh_close_01","anim_explorer_huh_far_01","anim_eyecontact_giggle_01","anim_eyecontact_giggle_01_head_angle_20","anim_eyecontact_giggle_01_head_angle_-20","anim_eyecontact_giggle_01_head_angle_40","anim_findcube_request_01","anim_fistbump_success_01","anim_fistbump_success_02","anim_fistbump_success_03","anim_freeplay_reacttoface_identified_01","anim_freeplay_reacttoface_identified_02","anim_freeplay_reacttoface_identified_03","anim_greeting_goodbye_01","anim_greeting_goodbye_02","anim_greeting_goodmorning_01","anim_greeting_goodmorning_02","anim_greeting_hello_01","anim_greeting_hello_02","anim_handdetection_reaction_01","anim_handdetection_reaction_02","anim_heldonpalm_edge_nervous_01","anim_heldonpalm_edge_relaxed_01","anim_heldonpalm_jolt_01","anim_heldonpalm_looking_nervous_01","anim_heldonpalm_nestling_01","anim_heldonpalm_pickup_nervous_01","anim_heldonpalm_pickup_relaxed_01","anim_heldonpalm_putdown_nervous_01","anim_heldonpalm_putdown_relaxed_01","anim_heldonpalm_relaxed_idle_01","anim_heldonpalm_transition2relaxed_01","anim_keepaway_backup_01","anim_keepaway_bored_idle_01","anim_keepaway_bored_idle_02","anim_keepaway_getin_focus_01","anim_keepaway_getout_engaged_01","anim_keepaway_getout_frustrated_01","anim_keepaway_getout_loseinterest_01","anim_keepaway_getout_satisfied_01","anim_keepaway_getreadyset_01","anim_keepaway_hit_reaction_01","anim_keepaway_idle_glance_01","anim_keepaway_idle_side_02","anim_keepaway_idleliftdown_01","anim_keepaway_idleliftdown_02","anim_keepaway_miss_reaction_01","anim_keepaway_pounce_mousetrap_04","anim_keepaway_pounce_quick_01","anim_keepaway_pounce_shake_02","anim_keepaway_pounce_slow_05","anim_onboarding_cube_psychic_01","anim_onboarding_cube_reacttocube","anim_onboarding_cube_success_getout_01","anim_onboarding_reacttoface_happy_01","anim_onboarding_reacttoface_happy_01_head_angle_20","anim_onboarding_reacttoface_happy_01_head_angle_-20","anim_onboarding_reacttoface_happy_01_head_angle_40","anim_petting_blissloop_01","anim_petting_blissloop_02","anim_petting_blissloop_03","anim_petting_lvl1_01","anim_petting_lvl2_01","anim_petting_lvl3_01","anim_petting_lvl4_01","anim_photo_focus_01","anim_photo_shutter_01","anim_pounce_01","anim_pounce_02","anim_pounce_03","anim_pounce_04","anim_pounce_fail_01","anim_pounce_fail_02","anim_pounce_fail_03","anim_pounce_fail_04","anim_pounce_long_01","anim_pounce_success_01","anim_pounce_success_02","anim_pounce_success_03","anim_pounce_success_04","anim_reacttoblock_dropfail_01","anim_reacttoblock_dropfail_02","anim_reacttoblock_dropsuccess_01","anim_reacttoblock_focusedeyes_01","anim_reacttoblock_frustrated_01","anim_reacttoblock_happydetermined_01","anim_reacttoblock_happydetermined_02","anim_reacttoblock_success_01","anim_reacttoface_unidentified_01_head_angle_20","anim_reacttoface_unidentified_01_head_angle_-20","anim_reacttoface_unidentified_01_head_angle_40","anim_reacttoface_unidentified_02_head_angle_20","anim_reacttoface_unidentified_02_head_angle_40","anim_reacttoface_unidentified_03_head_angle_20","anim_reacttoface_unidentified_03_head_angle_-20","anim_reacttohabitat_subtle_01","anim_referencing_curious_01","anim_referencing_curious_01_head_angle_20","anim_referencing_curious_01_head_angle_-20","anim_referencing_curious_01_head_angle_40","anim_referencing_giggle_01","anim_referencing_giggle_01_head_angle_20","anim_referencing_giggle_01_head_angle_-20","anim_referencing_giggle_01_head_angle_40","anim_referencing_smile_01","anim_referencing_smile_01_head_angle_20","anim_referencing_smile_01_head_angle_-20","anim_referencing_smile_01_head_angle_40","anim_referencing_squint_01","anim_referencing_squint_01_head_angle_20","anim_referencing_squint_01_head_angle_-20","anim_referencing_squint_01_head_angle_40","anim_referencing_squint_02","anim_referencing_squint_02_head_angle_20","anim_referencing_squint_02_head_angle_-20","anim_referencing_squint_02_head_angle_40","anim_sudden_obstacle_react_01","anim_sudden_obstacle_react_02","anim_timer_beep_01","anim_timer_emote_01","anim_triple_backup","anim_vc_alrighty_01","anim_vc_laser_lookdown_01","anim_vc_reaction_nofaceheardyou_01"]
 # define the UI
@@ -416,6 +420,15 @@ def logging_thread():
                             logtoggle = 1
                             file_logging = False
                             robotlog.append(timestamp + " " + msg)
+                if discord_logging:
+                    discord_data = {
+                        "content" : data
+                    }
+                    try:
+                        result = requests.post(discord_webhook, json = discord_data)
+                    except Exception as e:
+                        if debug_logging:
+                            log.put("[system] unable to post to Discord for " + str(vector_name) + ", e:"+repr(e))
                 log.task_done()
                 data = ""
         except Exception as e:
@@ -510,10 +523,11 @@ def robot_connection_thread():
     global init_complete
     global robot_current_control_level
     global log
+    sleeptime = 30
     try:
         sleep(2)
         if debug_logging or connect_logging:
-            log.put("[connct] connecting to Vector")
+            log.put("[connct] connecting to " + str(vector_name))
         connecting = myrobot.connect(timeout=30)
         sleep(2)
         # try:
@@ -524,7 +538,7 @@ def robot_connection_thread():
         robot_connection_error = 0
     except anki_vector.exceptions.VectorNotFoundException as e:
         if debug_logging or connect_logging:
-            log.put("[connct] Vector not found - make sure Vector is on and the system running this script is connected to the same wireless network, closing and retrying connection, stand by")
+            log.put("[connct] " + str(vector_name) + " not found - make sure " + str(vector_name) + " is on and the system running this script is connected to the same wireless network, closing and retrying connection, stand by")
         robot_connected = 0
         robot_connection_error = 0
         if quit_on_error and robot_battery_thread_running == 0:
@@ -534,7 +548,7 @@ def robot_connection_thread():
     except anki_vector.exceptions.VectorAsyncException as e:
         if repr(e).find("Repeated connections made to open Connection") != -1:
             if debug_logging or connect_logging:
-                log.put("[connct] connection to Vector not properly closed, closing and retrying connection, stand by")
+                log.put("[connct] connection to " + str(vector_name) + " not properly closed, closing and retrying connection, stand by")
             myrobot.conn.close()
             #myrobot.disconnect()
             robot_connection_error = 1
@@ -545,13 +559,13 @@ def robot_connection_thread():
                 quit_on_error_request = 1
     except anki_vector.exceptions.VectorConnectionException as e:
         if repr(e).find("DEADLINE_EXCEEDED") != -1:
-            if debug_logging:
+            if debug_logging or connect_logging:
                 log.put("[connct] SDK/OS timeout bug, closing and retrying connection, stand by")
             robot_connection_error = 1
             robot_connected = 0
         elif repr(e).find("connection has been closed") != -1:
             if debug_logging or connect_logging:
-                log.put("[connct] Vector online but keeps closing connection, TRY REBOOTING VECTOR (unless currently in boot sequence), we will keep retrying")
+                log.put("[connct] " + str(vector_name) + " is online but keeps closing connection, TRY REBOOTING VECTOR (unless currently in boot sequence), we will keep retrying")
             robot_connection_error = 1
             robot_connected = 0
             if quit_on_error and robot_battery_thread_running == 0:
@@ -576,8 +590,9 @@ def robot_connection_thread():
             quit_on_error_request = 1
         robot_connection_error = 1
     if robot_connected == 1 and robot_connection_error == 0:
+        sleeptime = 30
         if debug_logging or connect_logging:
-            log.put("[connct] connected to Vector")
+            log.put("[connct] connected to " + str(vector_name))
         if header_logging:
             # get robot OS version
             version_state_future = myrobot.get_version_state()
@@ -590,7 +605,7 @@ def robot_connection_thread():
             log.put("[system] faces: "+str(face_logging)+", speech: "+str(speech_logging)+", cube: "+str(cube_logging)+", dock: "+str(dock_events_logging)+", charge cycle: "+str(charge_cycle_logging)+", sensors: "+str(sensors_logging)+", actions: "+str(actions_logging)+", objects: "+str(object_logging))
             log.put("[system] battery: "+str(battery_logging)+", misc: "+str(misc_logging)+", camera: "+str(camera_logging)+", rangefinder: "+str(rangefinder_logging)+", motion: "+str(motion_logging)+", accel&gyro: "+str(accelgyro_logging)+", cont_cycle: " + str(continuous_cycle)+", reanimator: "+str(reanimator))
             if continuous_cycle and dock_events_logging:
-                log.put("[system] continuous_cycle: active, will attempt to force Vector off dock " + str(continuous_cycle_wait_time) + " seconds after a full charge when docked")
+                log.put("[system] continuous_cycle: active, will attempt to force " + str(vector_name) + " off dock " + str(continuous_cycle_wait_time) + " seconds after a full charge when docked")
                 # if continuous_cycle_scheduling:
                     # log.put("[system] continuous_cycle: schedule active, will run between "+str(continuous_cycle_earliest)+":00 and "+str(continuous_cycle_latest)+":00")
             if file_logging:
@@ -622,9 +637,12 @@ def robot_connection_thread():
                 return
             if robot_connected == 0 and robot_connection_error == 0 and program_exit_requested == 0:
                 if debug_logging or connect_logging:
-                    log.put("[connct] connection not established, sleeping 30 seconds and retrying")
+                    log.put("[connct] connection not established, sleeping " + str(sleeptime) + " seconds and retrying")
                 myrobot.conn.close()
-                sleep(30)
+                sleep(sleeptime)
+                sleeptime = sleeptime + sleeptime
+                if sleeptime > 3600:
+                    sleeptime = 3600
                 if debug_logging:
                     log.put("[debugs] robot_connection_thread: conn thread exit")
                 robot_connection_thread_running = 0
@@ -660,13 +678,13 @@ def robot_connection_thread():
                 log.put("[except] Unable to run a function which requires behavior control: " +repr(e))     
         except anki_vector.exceptions.VectorControlTimeoutException as e:
             if debug_logging:
-                log.put("[except] Failed to get control of Vector: " +repr(e))     
+                log.put("[except] Failed to get control of " + str(vector_name) + ": " +repr(e))     
         except anki_vector.exceptions.VectorInvalidVersionException as e:
             if debug_logging:
-                log.put("[except] Your SDK version is not compatible with Vector’s version: " +repr(e))     
+                log.put("[except] Your SDK version is not compatible with " + str(vector_name) + "’s version: " +repr(e))     
         except anki_vector.exceptions.VectorNotReadyException as e:
             if debug_logging:
-                log.put("[except] Vector tried to do something before it was ready: " +repr(e))     
+                log.put("[except] " + str(vector_name) + " tried to do something before it was ready: " +repr(e))     
         except anki_vector.exceptions.VectorPropertyValueNotReadyException as e:
             if debug_logging:
                 log.put("[except] Failed to retrieve the value for this property: " +repr(e))     
@@ -678,13 +696,13 @@ def robot_connection_thread():
                 log.put("[except] Failed to authenticate request: " +repr(e))     
         except anki_vector.exceptions.VectorUnavailableException as e:
             if debug_logging:
-                log.put("[except] Unable to reach Vector: " +repr(e))     
+                log.put("[except] Unable to reach " + str(vector_name) + ": " +repr(e))     
         except anki_vector.exceptions.VectorUnimplementedException as e:
             if debug_logging:
-                log.put("[except] Vector does not handle this message: " +repr(e))     
+                log.put("[except] " + str(vector_name) + " does not handle this message: " +repr(e))     
         except anki_vector.exceptions.VectorExternalAudioPlaybackException as e:
             if debug_logging:
-                log.put("[except] Failed to play external audio on Vector: " +repr(e))
+                log.put("[except] Failed to play external audio on " + str(vector_name) + ": " +repr(e))
         except Exception as e:
             if debug_logging:
                 log.put("[except] robot_connection_thread UNHANDLED E:" +repr(e))
@@ -723,15 +741,15 @@ def robot_battery_thread():
                     robot_voltage           = round(robot_battery_state.battery_volts,4)
                 else:
                     if debug_logging:
-                        log.put("[debugs] Failed to get battery and dock data")
+                        log.put("[debugs] Failed to get " + str(vector_name) + "'s battery and dock data")
             except anki_vector.exceptions.VectorNotFoundException as e:
                 if debug_logging:
-                    log.put("[except] robot_battery_thread: Vector not found error. Error: " + repr(e))
+                    log.put("[except] robot_battery_thread: " + str(vector_name) + " not found error. Error: " + repr(e))
                 robot_connected = 0
                 robot_connection_error = 0
             except anki_vector.exceptions.VectorUnavailableException as e:
                 if debug_logging:
-                    log.put("[except] robot_battery_thread: Vector unavailable error. Error: " + repr(e))
+                    log.put("[except] robot_battery_thread: " + str(vector_name) + " unavailable error. Error: " + repr(e))
                 robot_connected = 0
                 robot_connection_error = 1
             except anki_vector.exceptions.VectorConnectionException as e:
@@ -799,13 +817,13 @@ def robot_sensor_thread():
                     robot_distance_mm       = rangefinder_distance.distance_mm
             except anki_vector.exceptions.VectorNotFoundException as e:
                 if debug_logging:
-                    log.put("[except] robot_sensor_thread: Vector not found exception. Error: " + repr(e))
+                    log.put("[except] robot_sensor_thread: " + str(vector_name) + " not found exception. Error: " + repr(e))
                 sleep(5)
                 robot_connected = 0
                 robot_connection_error = 0
             except anki_vector.exceptions.VectorUnavailableException as e:
                 if debug_logging:
-                    log.put("[except] robot_sensor_thread: Vector unavailable error. Error: " + repr(e))
+                    log.put("[except] robot_sensor_thread: " + str(vector_name) + " unavailable error. Error: " + repr(e))
                 robot_connected = 0
                 robot_connection_error = 1
             except anki_vector.exceptions.VectorConnectionException as e:
@@ -866,7 +884,7 @@ def robot_event_thread():
                 log.put("[except] robot_event_thread on_robot_state issue: " +repr(e))
     def on_robot_observed_face(myrobot, event_type, event, evt):
         if event.face_id < 1:
-            log.put("[facedt] Vector sees an unknown face")
+            log.put("[facedt] " + str(vector_name) + " sees an unknown face")
         else:
             try:
                 for face in myrobot.world.visible_faces:
@@ -874,42 +892,42 @@ def robot_event_thread():
             except:
                 pass
             if face_name:
-                msg="[events] Vector sees a face with ID:" + str(event.face_id) + ", it's " + str(face_name) + "!"
+                msg="[events] " + str(vector_name) + " sees a face with ID:" + str(event.face_id) + ", it's " + str(face_name) + "!"
                 log.put(msg)
                 face_name = ""
             else:
-                msg="[events] Vector sees a face with ID:" + str(event.face_id)
+                msg="[events] " + str(vector_name) + " sees a face with ID:" + str(event.face_id)
                 log.put(msg)
     def on_robot_object_appeared(myrobot, event_type, event, evt):
-        msg="[events] Object appeared: " + str(event.obj)
+        msg="[events] " + str(vector_name) + " notes an object appeared: " + str(event.obj)
         log.put(msg)
     def on_robot_object_observed(myrobot, event_type, event, evt):
-        msg = "[events] Object observed" + str(event.obj)
+        msg = "[events] " + str(vector_name) + " observed an object: " + str(event.obj)
         log.put(msg)
     def on_robot_object_moved(myrobot, event_type, event, evt):
-        log.put("[events] Object_moved: " + str(event.obj))
+        log.put("[events] " + str(vector_name) + " thinks an object has moved: " + str(event.obj))
     def on_robot_object_stopped_moving(myrobot, event_type, event, evt):
-        log.put("[events] Object stopped moving: " + str(event.obj))
+        log.put("[events] " + str(vector_name) + " thinks an object stopped moving: " + str(event.obj))
     def on_user_intent(myrobot, event_type, event, evt):
         log.put("[events] User intent received:" + str(user_intent.intent_event))
         #data = json.loads(user_intent.intent_data)
         log.put("[events] Intent data captured:" + str(data))
     def on_wake_word(myrobot, event_type, event, evt):
-        log.put("[events] Vector heard a wake word")
+        log.put("[events] " + str(vector_name) + " heard a wake word")
     def on_robot_object_disappeared(myrobot, event_type, event, evt):
-        log.put("[events] Object disappeared: " + str(event.obj))
+        log.put("[events] " + str(vector_name) + " thinks an object disappeared: " + str(event.obj))
     def on_robot_audio_send_mode_changed(myrobot, event_type, event, evt):
-        log.put("[events] Event fired: audio_send_mode_changed")
+        log.put("[events] Event fired: audio_send_mode_changed for " + str(vector_name))
     def on_robot_cube_connection_lost(myrobot, event_type, event, evt):
-        log.put("[events] the cube was disconnected")
+        log.put("[events] the cube was disconnected from " + str(vector_name))
     def on_robot_nav_map_update(myrobot, event_type, event, evt):
-        log.put("[events] Event fired: nav_map_update")
+        log.put("[events] " + str(vector_name) + " updated the navigation map")
     def on_robot_new_camera_image(myrobot, event_type, event, evt):
-        log.put("[events] New camera image acquired")
+        log.put("[events] " + str(vector_name) + " has acquired a new camera image")
     def on_robot_new_raw_camera_image(myrobot, event_type, event, evt):
-        log.put("[events] New raw camera image acquired")
+        log.put("[events] " + str(vector_name) + " has acquired a new raw camera image")
     def on_robot_object_available(myrobot, event_type, event, evt):
-        log.put("[events] a cube is available")
+        log.put("[events] " + str(vector_name) + " knows a cube is available")
         if cube_powersaver:
             if cube_logging:
                 log.put("[events] cube_powersaver: attempting to disconnect")
@@ -917,7 +935,7 @@ def robot_event_thread():
             if cube_logging:
                 log.put("[events] cube_powersaver: attempt completed")
     def on_robot_object_tapped(myrobot, event_type, event, evt):
-        log.put("[events] a cube was tapped")
+        log.put("[events] " + str(vector_name) + " knows a cube was tapped")
         if cube_powersaver:
             if cube_logging:
                 log.put("[events] cube_powersaver: attempting to disconnect")
@@ -925,7 +943,7 @@ def robot_event_thread():
             if cube_logging:
                 log.put("[events] cube_powersaver: attempt completed")
     def on_robot_object_up_axis_changed(myrobot, event_type, event, evt):
-        log.put("[events] a cube was rotated")
+        log.put("[events] " + str(vector_name) + " knows a cube was rotated")
         if cube_powersaver:
             if cube_logging:
                 log.put("[events] cube_powersaver: attempting to disconnect")
@@ -1002,12 +1020,12 @@ def robot_event_thread():
                     return
                 except anki_vector.exceptions.VectorNotFoundException as e:
                     if debug_logging:
-                        log.put("[except] robot_event_thread: Vector not found exception. Error: " + repr(e))
+                        log.put("[except] robot_event_thread: " + str(vector_name) + " not found exception. Error: " + repr(e))
                     robot_connected = 0
                     robot_connection_error = 0
                 except anki_vector.exceptions.VectorUnavailableException as e:
                     if debug_logging:
-                        log.put("[except] robot_event_thread: Vector unavailable error. Error: " + repr(e))
+                        log.put("[except] robot_event_thread: " + str(vector_name) + " unavailable error. Error: " + repr(e))
                     robot_connected = 0
                     robot_connection_error = 1
                 except anki_vector.exceptions.VectorConnectionException as e:
@@ -1033,8 +1051,8 @@ def yeetbot():
         global myrobot
         global log
         incontrol = 0
-        if dock_events_logging:
-            msg = "[cycles] continuous_cycle: active, threshold reached, sleeping for " + str(continuous_cycle_wait_time) + " seconds as configured in continuous_cycle_wait_time setting"
+        if debug_logging:
+            msg = "[cycles] continuous_cycle: battery is full, sleeping for " + str(continuous_cycle_wait_time) + " and then forcing " + str(vector_name) + "off the charger"
             log.put(msg)
         waitcounter = 0
         while waitcounter < continuous_cycle_wait_time:
@@ -1047,23 +1065,24 @@ def yeetbot():
         if robot_docked and robot_batlevel == 3 and program_exit_requested == 0 and robot_control_blocking == 0 and robot_connected == 1:
             robot_control_blocking = 1
             if debug_logging:
-                log.put("[debugs] continuous_cycle: Requesting control")
+                log.put("[debugs] continuous_cycle: Requesting control of " + str(vector_name))
             if dock_events_logging:
-                log.put("[cycles] continuous_cycle: wake up, Vector!")
+                log.put("[cycles] continuous_cycle: wake up, " + str(vector_name) + "!")
             request = robot_control_request(1)
             if not request:
                 threadrunning = 0
                 if debug_logging:
-                    log.put("[debugs] continuous_cycle: control request failed")
+                    log.put("[debugs] continuous_cycle: control request for " + str(vector_name) + " failed")
                 robot_control_blocking = 0
                 return
             else:
                 incontrol = 1
             # this used to use drive_off_charger but that function is pretty unreliable, trying with low-level commands
             if dock_events_logging:
-                log.put("[cycles] continuous_cycle: forcing Vector off the charger")
+                log.put("[cycles] continuous_cycle: forcing " + str(vector_name) + " off the charger")
             #drive_off_anim_future = myrobot.anim.play_animation("anim_referencing_smile_01", ignore_body_track=True, ignore_head_track=False, ignore_lift_track=True)
-            myrobot.behavior.set_eye_color(eye_hue_blue,1)
+            if rainbow_eyes:
+                myrobot.behavior.set_eye_color(eye_hue_blue,1)
             myrobot.motors.set_wheel_motors(0, 0)
             sleep(0.3)
             myrobot.motors.set_wheel_motors(25, 25)
@@ -1072,20 +1091,22 @@ def yeetbot():
             sleep(0.3)
             if not robot_docked:
                 if dock_events_logging:
-                    log.put("[cycles] continuous_cycle: Vector force off charger success")
+                    log.put("[cycles] continuous_cycle: " + str(vector_name) + " force off charger success")
                 # force_off_dock_failure = 0
-                myrobot.behavior.set_eye_color(eye_hue_green,1)
+                if rainbow_eyes:
+                    myrobot.behavior.set_eye_color(eye_hue_green,1)
             else:
-                myrobot.behavior.set_eye_color(eye_hue_red,1)
+                if rainbow_eyes:
+                    myrobot.behavior.set_eye_color(eye_hue_red,1)
                 if dock_events_logging:
-                    msg="[cycles] continuous_cycle: Vector force off charger failure, will retry in " + str(continuous_cycle_wait_time) + " seconds"
+                    msg="[cycles] continuous_cycle: " + str(vector_name) + " force off charger failure, will retry in " + str(continuous_cycle_wait_time) + " seconds"
                     log.put(msg)
                 # force_off_dock_failure = 1
             #drive_off_anim_future.cancel()
             incontrol = 0
         else:
             if dock_events_logging:
-                log.put("[cycles] continuous_cycle: Vector currently not on charger or battery not full, aborting")
+                log.put("[cycles] continuous_cycle: " + str(vector_name) + " currently not on charger or battery not full, aborting")
         # all done exit thread
         if debug_logging:
             log.put("[debugs] continuous_cycle: Thread actions complete, exiting")
@@ -1209,9 +1230,9 @@ def robot_mix_animations():
         else:
             lift_track_2 = True
         if reanimator_debug:
-            log.put("[ranmtr] Vector will combine "+_ANIMATION1+" B:"+str(body_track_1)+",H:"+str(head_track_1)+",L:"+str(lift_track_1)+" and "+_ANIMATION2+" B:"+str(body_track_2)+",H:"+str(head_track_2)+",L:"+str(lift_track_2))
-        if reanimator_logging and not reanimator_debug:
-            log.put("[ranmtr] Vector is combining "+_ANIMATION1+" and "+_ANIMATION2)
+            log.put("[ranmtr] " + str(vector_name) + " will combine "+_ANIMATION1+" B:"+str(body_track_1)+",H:"+str(head_track_1)+",L:"+str(lift_track_1)+" and "+_ANIMATION2+" B:"+str(body_track_2)+",H:"+str(head_track_2)+",L:"+str(lift_track_2))
+        if reanimator_logging:
+            log.put("[ranmtr] " + str(vector_name) + " is combining "+_ANIMATION1+" and "+_ANIMATION2)
         # play the animations
         play_anim1_future = myrobot.anim.play_animation(_ANIMATION1, ignore_body_track=body_track_1, ignore_head_track=head_track_1, ignore_lift_track=lift_track_1)
         play_anim2_future = myrobot.anim.play_animation(_ANIMATION2, ignore_body_track=body_track_2, ignore_head_track=head_track_2, ignore_lift_track=lift_track_2)
@@ -1251,7 +1272,7 @@ def robot_random_drive():
     prox_array   = []
     clear_sailing = 0
     if reanimator_debug or reanimator_logging:
-        log.put("[ranmtr] Vector is going for a drive")
+        log.put("[ranmtr] " + str(vector_name) + " is going for a drive")
     try:
         # request control
         if debug_logging:
@@ -1271,7 +1292,7 @@ def robot_random_drive():
             if plusminus == 1:
                 random_turn = -random_turn
             if reanimator_debug:
-                log.put("[ranmtr] robot_random_drive: performing random turn of "+str(random_turn)+" degrees")
+                log.put("[ranmtr] robot_random_drive: " + str(vector_name) + " is performing random turn of "+str(random_turn)+" degrees")
             # head down, random turn, lift down
             head_future = myrobot.behavior.set_head_angle(MIN_HEAD_ANGLE)
             turn_future = myrobot.behavior.turn_in_place(degrees(random_turn))
@@ -1341,7 +1362,7 @@ def robot_random_drive():
             bugoutchance = random.randint(1, 100) + bugout_chance_increase
             if bugoutchance > 70 and clear_sailing == 0:
                 if reanimator_debug or reanimator_logging:
-                    log.put("[ranmtr] Vector going to random pose instead (this often fails, it's ok)")
+                    log.put("[ranmtr] " + str(vector_name) + " is going to a random position instead (this often fails, don't worry about it)")
                 robot_go_to_random_pose()
                 return
             else:
@@ -1372,9 +1393,9 @@ def robot_random_drive():
                 vector_speed = random.randint(50, 150)+(final_range/7)          
                 if reanimator_debug:
                     if clear_sailing == 0:
-                        log.put("[ranmtr] robot_random_drive: we are going on an adventure for "+str(final_range)+"mm at "+str(round(vector_speed,2))+"mm/s!")
+                        log.put("[ranmtr] robot_random_drive: " + str(vector_name) + " is going on an adventure for "+str(final_range)+"mm at "+str(round(vector_speed,2))+"mm/s!")
                     else:
-                        log.put("[ranmtr] robot_random_drive: No obstacles for max range! Going to drive for "+str(final_range)+"mm at "+str(round(vector_speed,2))+"mm/s!")
+                        log.put("[ranmtr] robot_random_drive: No obstacles for max range! " + str(vector_name) + " is going to drive for "+str(final_range)+"mm at "+str(round(vector_speed,2))+"mm/s!")
                 clear_sailing = 0
                 if robot_current_control_level == None:
                     request = robot_control_request(1)
@@ -1419,7 +1440,7 @@ def robot_random_drive():
                     final_range = (range_cali/5)
                     if final_range < 55:
                         if reanimator_debug:
-                            log.put("[ranmtr] robot_random_drive: whoa that wall is close ("+str(final_range)+"), better back up")
+                            log.put("[ranmtr] robot_random_drive: whoa that wall is close ("+str(final_range)+") to " + str(vector_name) + ", better back up")
                         if not robot_good_to_go:
                             robot_control_request(0)
                             return
@@ -1481,7 +1502,7 @@ def robot_random_drive():
                         turnchance = random.randint(1, 100)
                         if turnchance > 35:
                             if reanimator_debug:
-                                log.put("[ranmtr] going to do a 180")
+                                log.put("[ranmtr] " + str(vector_name) + " is doing a 180")
                             if robot_current_control_level == None:
                                 request = robot_control_request(1)
                                 if not request:
@@ -1491,11 +1512,12 @@ def robot_random_drive():
                             timeout = 0	
                             while str(turn_future).find("pending") != -1 or timeout < 4:	
                                 if timeout >= 4:
+                                    myrobot.behavior.set_eye_color(eye_hue_yellow,1)
                                     break
                                 if not robot_good_to_go or robot_current_control_level == None:	
                                     break
                                 if rainbow_eyes:
-                                    myrobot.behavior.set_eye_color(eye_hue_yellow,1)
+                                    myrobot.behavior.set_eye_color(eye_hue_blue,1)
                                     break
                                 timeout = timeout + (refresh_rate/2)
                                 sleep(refresh_rate/2)	
@@ -1506,11 +1528,12 @@ def robot_random_drive():
                                 return
                     else:
                         if reanimator_debug:
-                            log.put("[ranmtr] robot_random_drive: we have "+str(final_range)+"mm free space in front")
+                            log.put("[ranmtr] robot_random_drive: " + str(vector_name) + " has "+str(final_range)+"mm free space in front")
             else:
-                myrobot.behavior.set_eye_color(eye_hue_yellow,1)
+                if rainbow_eyes:
+                    myrobot.behavior.set_eye_color(eye_hue_red,1)
                 if reanimator_debug:
-                    log.put("[ranmtr] robot_random_drive: Vector doesn't think there is enough space to go for a drive")
+                    log.put("[ranmtr] robot_random_drive: " + str(vector_name) + " doesn't think there is enough space to go for a drive")
             sleep(refresh_rate)
             prox_array.clear()
             total_steps_count += 1
@@ -1526,7 +1549,7 @@ def robot_roll_cube():
     global myrobot
     global log
     if reanimator_logging:
-        log.put("[ranmtr] Vector is trying to roll a cube (this fails often, don't worry about it)")  
+        log.put("[ranmtr] " + str(vector_name) + " is trying to roll a cube (this fails often, don't worry about it)")  
     try:
         request = robot_control_request(1)
         if not request:
@@ -1536,7 +1559,7 @@ def robot_roll_cube():
             if debug_logging:
                 log.put("[debugs] robot_roll_cube: have control")
         if reanimator_debug:
-            log.put("[ranmtr] robot_roll_cube: driving to cube")
+            log.put("[ranmtr] robot_roll_cube: " + str(vector_name) + " is driving to cube")
         drive_to_cube = myrobot.behavior.go_to_object(myrobot.world.light_cube, distance_mm(100.0))
         timeout = 0
         while str(drive_to_cube).find("pending") != -1:
@@ -1565,14 +1588,15 @@ def robot_roll_cube():
             return
     try:
         if reanimator_debug:
-            log.put("[ranmtr] robot_roll_cube: going to roll a cube (this fails fairly often)")
+            log.put("[ranmtr] robot_roll_cube: " + str(vector_name) + " is rolling a cube (this fails fairly often, don't worry about it)")
         roll_the_cube = myrobot.behavior.roll_cube(myrobot.world.light_cube)
         timeout = 0
         while str(roll_the_cube).find("pending") != -1:
             if not robot_good_to_go or robot_current_control_level == None:
                 break
             if timeout > 15:
-                myrobot.behavior.set_eye_color(eye_hue_yellow,1)
+                if rainbow_eyes:
+                    myrobot.behavior.set_eye_color(eye_hue_yellow,1)
                 break
             if rainbow_eyes:
                 myrobot.behavior.set_eye_color(eye_hue_blue,1)
@@ -1610,7 +1634,7 @@ def robot_go_to_random_pose():
         zangle = random.randint(-359, 359)
         pose = Pose(x=xpose, y=ypose, z=0, angle_z=Angle(degrees=zangle))
         if reanimator_debug:
-            log.put("going to pose: "+str(pose))
+            log.put(str(vector_name) + " is going to pose: "+str(pose))
         if robot_good_to_go:
             request = robot_control_request(1)
             if not request:
@@ -1641,6 +1665,8 @@ def robot_look_around():
     global myrobot
     global log
     try:
+        if reanimator_debug:
+            log.put(str(vector_name) + " is having a good look around")
         if robot_good_to_go:
             request = robot_control_request(1)
             if not request:
@@ -1704,26 +1730,27 @@ def robot_control_request(control_or_release):
                         if debug_logging:
                             if timeout >= 7:
                                 if debug_logging:
-                                    log.put("[debugs] robot_control_request: timeout on request")
+                                    log.put("[debugs] robot_control_request: timeout on request for " + str(vector_name))
                             else:
                                 if debug_logging:
-                                    log.put("[debugs] robot_control_request: robot state out of scope")
+                                    log.put("[debugs] robot_control_request: " + str(vector_name) + " state out of scope")
                         control_response = False
                         return control_response
                     timeout = timeout + refresh_rate
                     sleep(refresh_rate)
-                myrobot.behavior.set_eye_color(eye_hue_green,1)    
+                if rainbow_eyes:
+                    myrobot.behavior.set_eye_color(eye_hue_green,1)    
                 sleep(1)
                 control_response = True
                 return control_response
             else:
                 if debug_logging:
-                    log.put("[debugs] robot_control_request: robot state out of scope")
+                    log.put("[debugs] robot_control_request: " + str(vector_name) + " state out of scope")
                     control_response = False
                     return control_response
         except Exception as e:
             if debug_logging:
-                log.put("[except] robot_control_request: issue requesting control: "+repr(e))
+                log.put("[except] robot_control_request: issue requesting control of " + str(vector_name) + ": "+repr(e))
             controlrequest.cancel()
             control_response = False
             return control_response
@@ -1738,7 +1765,7 @@ def robot_control_request(control_or_release):
                 if program_exit_requested == 1 or robot_connected == 0:
                     releaserequest.cancel()
                     if debug_logging:
-                        log.put("[debugs] robot_control_request: issue releasing")
+                        log.put("[debugs] robot_control_request: issue releasing control of " + str(vector_name))
                     return
                 timeout = timeout + refresh_rate
                 sleep(refresh_rate)
@@ -1761,7 +1788,6 @@ if not headless:
         _ = system('clear')
 else:
     print("VecTrix " + str(vt_version) + " started headless, gathering data at refresh rate " + str(refresh_rate) + ", press CTRL+C to exit")
-
 # start UI thread
 if ui_thread_running == 0 and not headless:
     try:
@@ -1779,7 +1805,7 @@ if logging_thread_running == 0:
         print("[except] FATAL: Issue starting logging_thread, exiting. E:"+repr(e))
         exit()   
 if debug_logging:
-    log.put("[system] Initializing and connecting to robot")
+    log.put("[system] Initializing and connecting to " + str(vector_name))
 # start robot connection thread
 while robot_connected == 0:
     if robot_connected == 0 and robot_connection_error == 0:
@@ -1803,7 +1829,7 @@ while robot_connected == 0:
             exit()
     else:
         if debug_logging:
-            log.put("[debugs] initial connect: waiting for robot to conn, conn thread running:"+str(robot_connection_thread_running))
+            log.put("[debugs] initial connect: waiting for " + str(vector_name) + " to conn, conn thread running:"+str(robot_connection_thread_running))
         sleep(3)
 for item in buttonlist:
     item.color=ui_color_2
@@ -1814,10 +1840,10 @@ if camera_logging:
         myrobot.camera.init_camera_feed()
     except Exception as e:
         if debug_logging:
-            log.put("[except] issue initializing the camera feed: "+repr(e))
+            log.put("[except] issue initializing the camera feed for " + str(vector_name) + ": "+repr(e))
 if connect_to_cube:
     try:
-        log.put("[system] connecting to cube")
+        log.put("[system] connecting to " + str(vector_name) + "'s cube")
         myrobot.world.connect_cube()
 
     except Exception as e:
@@ -1905,7 +1931,7 @@ while True:
                     log.put("[except] FATAL: Issue starting thread for robot_connection_thread, exiting. E:"+repr(e))
                     exit()
             if debug_logging:
-                log.put("[debugs] main loop: robot not connected, waiting for connection thread. Conn thread running:" +str(robot_connection_thread_running))
+                log.put("[debugs] main loop: " + str(vector_name) + " not connected, waiting for connection thread. Conn thread running:" +str(robot_connection_thread_running))
             sleep(5)
         # connected and all is well, get to it
         if robot_connected == 1 and program_exit_requested == 0:
@@ -2086,7 +2112,7 @@ while True:
 # --- END OF CALCULATED VALUES SECTION ---
 # --- SUBROUTINES SECTION ---
 # --- In which we use the gathered data to do fun stuff  ---
-# This is where you can add your own routines. You can read robot state values such as robot_good_to_go, robot_current_control_level, robot_control_blocking, robot_voltage, robot_held, robot_...etc.
+# This is also where I suggest you add your own routines. You can read robot state values such as robot_good_to_go, robot_current_control_level, robot_control_blocking, robot_voltage, robot_held, robot_...etc.
 # you can also call routines like robot_random_drive(), robot_control_request(control_or_release), robot_roll_cube()
 #
     # CONTINUOUS CYCLE 
@@ -2125,7 +2151,7 @@ while True:
                             # log.put("[thread] Robot off dock while threadrunning=1, resetting")
                 if force_off_dock_failure == 1 and threadrunning == 0 and robot_docked:
                     if debug_logging:
-                            log.put("[debugs] continuous_cycle: robot on dock, force_off_dock_failure=1, resetting")
+                            log.put("[debugs] continuous_cycle: " + str(vector_name) + " on dock, force_off_dock_failure=1, resetting")
                     threadrunning = 0
                     force_off_dock_failure = 0
     # VECTOR REANIMATOR, or how often does Vector sit still during an outing (and can we fix it)(yes we can)
@@ -2138,7 +2164,7 @@ while True:
                             pass
                         else:
                             if debug_logging:
-                                msg = "[debugs] Vector has started moving again, inactivity for "+str("%.2f" % round(vector_sit_still_total_time,2))+" seconds"
+                                msg = "[debugs] " + str(vector_name) + " has started moving again, inactivity for "+str("%.2f" % round(vector_sit_still_total_time,2))+" seconds"
                                 log.put(msg)
                             vector_sit_still_total_time = 0
                     if (robot_moving or robot_driving) and not endless_reanimator:
@@ -2148,7 +2174,7 @@ while True:
                         vector_sit_still_total_time = vector_sit_still_total_time + refresh_rate
                     if stillswitch == 0 and vector_sit_still_total_time > reanimator_timeout and reanimator_thread_running == 0 and not endless_reanimator:
                         if debug_logging:
-                            log.put("[debugs] Vector has hit idle threshold at "+str(vector_sit_still_total_time)+ " seconds")
+                            log.put("[debugs] " + str(vector_name) + " has hit idle threshold at "+str(vector_sit_still_total_time)+ " seconds")
                         if reanimator_thread_running == 0 and vector_is_idle == 0:
                             vector_is_idle = 1
                             vector_sit_still_total_time = 0
@@ -2199,9 +2225,9 @@ while True:
                     if fullcharge == 1 and docked == 1 and charging == 0:
                         discharge_start_time = '{:%H:%M:%S}'.format(datetime.datetime.now())
                         if dock_events_logging:
-                            log.put("[chargr] Vector has left the charger with a full battery charge, go forth and explore!")
+                            log.put("[chargr] " + str(vector_name) + " has left the charger with a full battery charge, go forth and explore!")
                         if continuous_cycle:
-                            log.put("[system] continuous_cycle: active, current cycle:" + str(yeetcounter))
+                            log.put("[system] continuous_cycle: active, current cycle for " + str(vector_name) + ":" + str(yeetcounter))
                             yeetcounter += 1
                     # left dock but not with full charge 
                     if fullcharge == 0 and docked == 1 and charging == 1:
@@ -2214,39 +2240,39 @@ while True:
                             d2 = datetime.datetime.strptime(charge_stop_time, "%H:%M:%S")
                             d3 = datetime.datetime.strptime(str(d2 - d1), "%H:%M:%S")
                             if d3 < datetime.datetime.strptime("00:00:15", "%H:%M:%S"):
-                                log.put("[chargr] Charger docking attempt miss detected, Vector was on charger for less than 15 seconds")
+                                log.put("[chargr] Charger docking attempt miss detected, " + str(vector_name) + " was on charger for less than 15 seconds")
                             d1 = ""
                             d2 = ""
                             d3 = ""
                         if dock_events_logging:
-                            log.put("[chargr] Vector has left the charger but not with a full battery charge")
+                            log.put("[chargr] " + str(vector_name) + " has left the charger but not with a full battery charge")
                     # not on dock, low power notification
                     if lowpower == 0 and robot_batlevel == 1:
                         #lowpower_time = '{:%H:%M:%S}'.format(datetime.datetime.now())
                         if dock_events_logging:
-                            log.put("[chargr] Vector's battery has reached low state, Vector will look for the charger")  
+                            log.put("[chargr] " + str(vector_name) + "'s battery has reached low state, going to find the charger")  
                 if robot_docked:            
                     # returned to dock with low battery    
                     if lowpower == 1 and robot_charging and docked == 0 and fullcharge == 0 and charging == 0:
                         discharge_stop_time = '{:%H:%M:%S}'.format(datetime.datetime.now())
                         if dock_events_logging:
-                            log.put("[chargr] Vector has successfully docked with charger after battery hit low state")
+                            log.put("[chargr] " + str(vector_name) + " has successfully docked with charger after battery hit low state")
                     # returned to dock, not with low battery
                     if lowpower == 0 and docked == 0 and charging == 0 and robot_charging:
                         discharge_stop_time = '{:%H:%M:%S}'.format(datetime.datetime.now())
                         partial = 1
                         if dock_events_logging:
-                            log.put("[chargr] Vector has successfully docked with charger before battery hit low state")
+                            log.put("[chargr] " + str(vector_name) + " has successfully docked with charger before battery hit low state")
                     # on dock charging
                     if charging == 0 and robot_charging and docked == 0:
                         charge_start_time = '{:%H:%M:%S}'.format(datetime.datetime.now())
                         if dock_events_logging:
-                            log.put("[chargr] Vector's battery is charging")
+                            log.put("[chargr] " + str(vector_name) + "'s battery is charging")
                     # on dock, not charging    
                     if charging == 1 and not robot_charging and robot_batlevel == 3 and fullcharge == 0:
                         charge_stop_time = '{:%H:%M:%S}'.format(datetime.datetime.now())
                         if dock_events_logging:
-                            log.put("[chargr] Vector's battery is fully charged")
+                            log.put("[chargr] " + str(vector_name) + "'s battery is fully charged")
         # TRUTH TABLE UPDATE LOGIC
             # docked, full battery
             if robot_docked and not robot_charging:
@@ -2292,15 +2318,15 @@ while True:
                         chrgtxt = "resting"
                     if robot_docked:
                         if robot_charging:
-                            log.put("[chargr] startup state: Vector is "+chrgtxt+" on the charger, battery level is "+batlvltxt)
+                            log.put("[chargr] startup state: " + str(vector_name) + " is "+chrgtxt+" on the charger, battery level is "+batlvltxt)
                     else:
-                        log.put("[chargr] startup state: Vector is off-charger, battery level is "+batlvltxt)
+                        log.put("[chargr] startup state: " + str(vector_name) + " is off-charger, battery level is "+batlvltxt)
                 # calmpower/sleep logging
                 if robot_calmpower and calmpower == 0:
-                    log.put("[action] Vector is sleeping")
+                    log.put("[action] " + str(vector_name) + " is sleeping")
                     calmpower = 1
                 if not robot_calmpower and calmpower == 1:
-                    log.put("[action] Vector is awake")
+                    log.put("[action] " + str(vector_name) + " is awake")
                     calmpower = 0
                 # start/end times for (dis)charge cycles
                 # if we have an endtime but not a start time, skip!
@@ -2321,7 +2347,7 @@ while True:
                 if discharge_start_time and discharge_stop_time:
                     d1 = datetime.datetime.strptime(discharge_start_time, "%H:%M:%S")
                     d2 = datetime.datetime.strptime(discharge_stop_time, "%H:%M:%S")
-                    log.put("[chargr] " + partialtext + " battery discharge from " + str(discharge_start_time) + " to " + str(discharge_stop_time) + ", total time: " + str(d2-d1))
+                    log.put("[chargr] " + str(vector_name) + " reports:" + partialtext + " battery discharge from " + str(discharge_start_time) + " to " + str(discharge_stop_time) + ", total time: " + str(d2-d1))
                     discharge_start_time = ""
                     discharge_stop_time  = ""
                     d1 = ""
@@ -2331,7 +2357,7 @@ while True:
                 if charge_start_time and charge_stop_time:
                     d1 = datetime.datetime.strptime(charge_start_time, "%H:%M:%S")
                     d2 = datetime.datetime.strptime(charge_stop_time, "%H:%M:%S")
-                    log.put("[chargr] " + partialtext + " battery charge from " + str(charge_start_time) + " to " + str(charge_stop_time) + ", total time: " + str(d2-d1))           
+                    log.put("[chargr] " + str(vector_name) + " reports:" + partialtext + " battery charge from " + str(charge_start_time) + " to " + str(charge_stop_time) + ", total time: " + str(d2-d1))           
                     charge_start_time = ""
                     charge_stop_time = ""
                     d1 = ""
@@ -2341,7 +2367,7 @@ while True:
     # battery logging
             if battery_logging:
                 if batlogcounter >= battery_logging_interval:
-                    log.put("[chargr] raw voltage:" + str(robot_voltage) + ", 20-sample avg:" + str(robot_voltage_calculated) + ", docked: " + str(robot_docked) + ", charging: "+str(robot_charging)+ ", batlevel: " + str(robot_batlevel))
+                    log.put("[chargr] " + str(vector_name) + " raw voltage:" + str(robot_voltage) + ", 20-sample avg:" + str(robot_voltage_calculated) + ", docked: " + str(robot_docked) + ", charging: "+str(robot_charging)+ ", batlevel: " + str(robot_batlevel))
                     batlogcounter = 0
                 else:
                     batlogcounter = batlogcounter + refresh_rate
@@ -2366,113 +2392,113 @@ while True:
     # sensors logging 
             if sensors_logging:
                 if robot_cliffdetect and cliffswitch == 0:
-                    log.put("[sensor] Vector detects a cliff")
+                    log.put("[sensor] " + str(vector_name) + " detects a cliff")
                     cliffswitch = 1
                 if not robot_cliffdetect and cliffswitch == 1:
-                    log.put("[sensor] Vector no longer detects a cliff")
+                    log.put("[sensor] " + str(vector_name) + " no longer detects a cliff")
                     cliffswitch = 0
                 if robot_falling and fallswitch == 0:
-                    log.put("[sensor] Vector detects falling")
+                    log.put("[sensor] " + str(vector_name) + " detects falling")
                     fallswitch = 1
                 if not robot_falling and fallswitch == 1:
-                    log.put("[sensor] Vector no longer detects falling")
+                    log.put("[sensor] " + str(vector_name) + " no longer detects falling")
                     fallswitch = 0
                 if robot_pickup and pickupswitch == 0:
-                    log.put("[sensor] Vector detects being picked up")
+                    log.put("[sensor] " + str(vector_name) + " detects being picked up")
                     pickupswitch = 1
                 if not robot_pickup and pickupswitch == 1:
-                    log.put("[sensor] Vector no longer detects being picked up")
+                    log.put("[sensor] " + str(vector_name) + " no longer detects being picked up")
                     pickupswitch = 0
                 if robot_held and heldswitch == 0:
-                    log.put("[sensor] Vector detects being held")
+                    log.put("[sensor] " + str(vector_name) + " detects being held")
                     heldswitch = 1
                 if not robot_held and heldswitch == 1:
-                    log.put("[sensor] Vector no longer detects being held")
+                    log.put("[sensor] " + str(vector_name) + " no longer detects being held")
                     heldswitch = 0
                 if robot_is_being_touched and petswitch == 0:
-                    log.put("[sensor] Vector detects being petted. Aw yiss! (raw touch sensor reading: " + str(robot_raw_touch_value) +")")
+                    log.put("[sensor] " + str(vector_name) + " detects being petted. Aw yiss! (raw touch sensor reading: " + str(robot_raw_touch_value) +")")
                     petswitch = 1
                 if not robot_is_being_touched and petswitch == 1:
                     petswitch = 0
                 if robot_button and buttonswitch == 0:
-                    log.put("[sensor] Vector detects a button press")
+                    log.put("[sensor] " + str(vector_name) + " detects a button press")
                     buttonswitch = 1
                 if not robot_button and buttonswitch == 1:
                     buttonswitch = 0
     # actions logging
             if actions_logging:
                 if robot_carrying and carryswitch == 0:
-                    log.put("[action] Vector is carrying a cube")
+                    log.put("[action] " + str(vector_name) + " is carrying a cube")
                     carryswitch = 1
                 if not robot_carrying and carryswitch == 1:
-                    log.put("[action] Vector has put down a cube")
+                    log.put("[action] " + str(vector_name) + " has put down a cube")
                     carryswitch = 0
                 if robot_docking and dockswitch == 0:
                     dockswitch = 1
                     if robot_batlevel == 1:
-                        log.put("[action] Vector is attempting to dock with charger")
+                        log.put("[action] " + str(vector_name) + " is attempting to dock with charger")
                         docking = 1
                         dockcounter += 1
                         if dockcounter > 1:
-                            log.put("[chargr] Vector has failed to dock " + str(dockcounter) + " times")
+                            log.put("[chargr] " + str(vector_name) + " has failed to dock " + str(dockcounter) + " times")
                     else:
-                        log.put("[action] Vector is attempting to dock with cube/charger")
+                        log.put("[action] " + str(vector_name) + " is attempting to dock with cube/charger")
                 if not robot_docking and dockswitch == 1:        
                     dockswitch = 0   
     # motion logging
             if motion_logging:
                 if robot_moving and movingswitch == 0:
                     movingswitch = 1
-                    log.put("[motion] Vector is in motion (any motor)")
+                    log.put("[motion] " + str(vector_name) + " is in motion (any motor)")
                 if not robot_moving and movingswitch == 1:
-                    log.put("[motion] Vector is no longer in motion (any motor)")
+                    log.put("[motion] " + str(vector_name) + " is no longer in motion (any motor)")
                     movingswitch = 0
                 if robot_animating and animatingswitch == 0:
                     animatingswitch = 1
-                    log.put("[motion] Vector is animating")
+                    log.put("[motion] " + str(vector_name) + " is animating")
                 if not robot_animating and animatingswitch == 1:
                     animatingswitch = 0
-                    log.put("[motion] Vector is no longer animating")
+                    log.put("[motion] " + str(vector_name) + " is no longer animating")
                 if robot_pathing and pathswitch == 0:
-                    log.put("[motion] Vector is pathing")
+                    log.put("[motion] " + str(vector_name) + " is pathing")
                     pathswitch = 1
                 if not robot_pathing and pathswitch == 1:
                     pathswitch = 0
-                    log.put("[motion] Vector is no longer pathing")
+                    log.put("[motion] " + str(vector_name) + " is no longer pathing")
                 if robot_driving and drivingswitch == 0:
-                    log.put("[motion] Vector's wheels are moving")
+                    log.put("[motion] " + str(vector_name) + "'s wheels are moving")
                     drivingswitch = 1
                 if not robot_driving and drivingswitch == 1:
-                    log.put("[motion] Vector's wheels are no longer moving")
+                    log.put("[motion] " + str(vector_name) + "'s wheels are no longer moving")
                     drivingswitch = 0
     # accel/gyro logging
             if accelgyro_logging:
                 if accelgyrocounter >= accelgyro_logging_interval:
                     accelgyrocounter = 0
-                    log.put("[sensor] raw accel:" + str(robot_accel_x) + "," + str(robot_accel_y) + "," + str(robot_accel_z))
-                    log.put("[sensor] cal accel:" + str(calibrate_accel_x) + "," + str(calibrate_accel_y) + "," + str(calibrate_accel_z))
-                    log.put("[sensor] gyro," + str(robot_gyro_x) + "," + str(robot_gyro_y) + "," + str(robot_gyro_z))
+                    log.put("[sensor] " + str(vector_name) + " raw accel:" + str(robot_accel_x) + "," + str(robot_accel_y) + "," + str(robot_accel_z))
+                    log.put("[sensor] " + str(vector_name) + " cal accel:" + str(calibrate_accel_x) + "," + str(calibrate_accel_y) + "," + str(calibrate_accel_z))
+                    log.put("[sensor] " + str(vector_name) + " gyro," + str(robot_gyro_x) + "," + str(robot_gyro_y) + "," + str(robot_gyro_z))
                 else:
                     accelgyrocounter = accelgyrocounter + refresh_rate
     # rangefinder logging
             if rangefinder_logging:
                 if rangecounter >= rangefinder_logging_interval:
-                    log.put("[sensor] Rangefinder: " + str(robot_distance_mm) + ", signal quality: " + str(robot_signal_quality))
+                    log.put("[sensor] " + str(vector_name) + " rangefinder: " + str(robot_distance_mm) + ", signal quality: " + str(robot_signal_quality))
                     rangecounter = 0
                 else: 
                     rangecounter = rangecounter + refresh_rate
     # debug logging 
             if debug_logging and debug_logging_interval > 0:
                     if tickcounter >= debug_logging_interval:
-                        log.put("[debugs] ticks: "+str(programticks)+", fullcharge:"+str(fullcharge)+", charging:"+str(charging)+", docked:"+str(docked)+", lowpower:"+str(lowpower)+ ", connected:"+str(robot_connected)+", error:"+str(robot_connection_error)+", idle:"+str(round(vector_sit_still_total_time,2))+", last event:"+str(round(last_event_received,2)))
-                        log.put("[debugs] UI:"+str(ui_thread_running)+", conn:"+str(robot_connection_thread_running)+", batt:"+str(robot_battery_thread_running)+", sensor:"+str(robot_sensor_thread_running)+", events:"+str(robot_event_thread_running)+", reanim:"+str(reanimator_thread_running)+", yeet:"+str(threadrunning)+", CC: "+str(continuous_cycle)+", CCS: "+str(continuous_cycle_scheduling)+", GTG :"+str(robot_good_to_go))
-                        log.put("[debugs] char: "+str(robot_charging)+", dock:"+str(robot_docked)+", calm:"+str(robot_calmpower)+", clif:"+str(robot_cliffdetect)+", fall:"+str(robot_falling)+ ", pick:"+str(robot_pickup)+", held:"+str(robot_held)+", butt:"+str(robot_button)+", carr:"+str(robot_carrying))
-                        log.put("[debugs] dock: "+str(robot_docking)+", move:"+str(robot_moving)+", anim:"+str(robot_animating)+", path:"+str(robot_pathing)+", driv:"+str(robot_driving)+ ", volt:"+str(round(robot_voltage,2))+", blvl:"+str(robot_batlevel))
+                        log.put("[debugs] " + str(vector_name) + " ticks: "+str(programticks)+", fullcharge:"+str(fullcharge)+", charging:"+str(charging)+", docked:"+str(docked)+", lowpower:"+str(lowpower)+ ", connected:"+str(robot_connected)+", error:"+str(robot_connection_error)+", idle:"+str(round(vector_sit_still_total_time,2))+", last event:"+str(round(last_event_received,2)))
+                        log.put("[debugs] " + str(vector_name) + " UI:"+str(ui_thread_running)+", conn:"+str(robot_connection_thread_running)+", batt:"+str(robot_battery_thread_running)+", sensor:"+str(robot_sensor_thread_running)+", events:"+str(robot_event_thread_running)+", reanim:"+str(reanimator_thread_running)+", yeet:"+str(threadrunning)+", CC: "+str(continuous_cycle)+", CCS: "+str(continuous_cycle_scheduling)+", GTG :"+str(robot_good_to_go))
+                        log.put("[debugs] " + str(vector_name) + " char: "+str(robot_charging)+", dock:"+str(robot_docked)+", calm:"+str(robot_calmpower)+", clif:"+str(robot_cliffdetect)+", fall:"+str(robot_falling)+ ", pick:"+str(robot_pickup)+", held:"+str(robot_held)+", butt:"+str(robot_button)+", carr:"+str(robot_carrying))
+                        log.put("[debugs] " + str(vector_name) + " dock: "+str(robot_docking)+", move:"+str(robot_moving)+", anim:"+str(robot_animating)+", path:"+str(robot_pathing)+", driv:"+str(robot_driving)+ ", volt:"+str(round(robot_voltage,2))+", blvl:"+str(robot_batlevel))
                         tickcounter = 0
                         threadlist = ""
                         for t in threading.enumerate():
                             threadlist = threadlist + str(t.getName())+", "
-                        log.put("[debugs] threads: "+str(threadlist))
+                        log.put("[debugs] " + str(vector_name) + " threads: "+str(threadlist))
                     else:
                         tickcounter = tickcounter + refresh_rate
                     programticks += 1
@@ -2484,7 +2510,7 @@ while True:
                     try:
                         robot.world.disconnect_cube()
                     except:
-                        log.put("[system] issue disconnecting from cube")
+                        log.put("[system] issue disconnecting from " + str(vector_name) + "'s cube")
                 while reanimator_thread_running == 1:
                     sleep(refresh_rate)
                 while threadrunning == 1:
@@ -2500,7 +2526,7 @@ while True:
                         break
                     sleep(refresh_rate)
                 if debug_logging:
-                    log.put("[system] Threads stopped, closing connection to Vector")
+                    log.put("[system] Threads stopped, closing connection to " + str(vector_name))
                 robot_connection_thread_stop = 1
                 while robot_connection_thread_running > 0:
                     sleep(refresh_rate)
@@ -2537,7 +2563,7 @@ while True:
             try:
                 robot.world.disconnect_cube()
             except:
-                log.put("[except] issue disconnecting from cube")
+                log.put("[except] issue disconnecting from " + str(vector_name) + "'s cube")
         while reanimator_thread_running == 1:
             sleep(refresh_rate)
         while threadrunning == 1:
@@ -2577,14 +2603,14 @@ while True:
         sys.exit()
     except anki_vector.exceptions.VectorNotFoundException as e:
         if debug_logging:
-            log.put("[except] main_loop: Vector not found exception. Error: " + repr(e))
+            log.put("[except] main_loop: " + str(vector_name) + " not found exception. Error: " + repr(e))
         robot_connected = 0
         robot_connection_error = 0
         if quit_on_error:
             quit_on_error_request = 1
     except anki_vector.exceptions.VectorUnavailableException as e:
         if debug_logging:
-            log.put("[except] main_loop: Vector unavailable error. Error: " + repr(e))
+            log.put("[except] main_loop: " + str(vector_name) + " unavailable error. Error: " + repr(e))
         robot_connected = 0
         robot_connection_error = 1
         if quit_on_error:
