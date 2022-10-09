@@ -9,8 +9,8 @@ This program was created to accomplish three things:
 
 # Requirements
 - Windows, Mac, or Linux system
-- Python 3.x, configured Vector Python SDK and Vector robot (i.e. you can already connect to the robot with Python)
-- the Dashing library for Python: pip3 install dashing
+- Python 3.x, configured [Vector Python SDK][1] and [Vector robot][2] (i.e. you can already connect to the robot with Python)
+- the [Dashing library][3] for Python: pip3 install dashing
 
 # Main features
 - built to run 24/7 in console UI or headless mode while using few resources
@@ -25,3 +25,9 @@ This program was created to accomplish three things:
 
 # Video demo (old version)
 [![Demo video (old version)](https://img.youtube.com/vi/o9g9NPUKeCg/0.jpg)](https://www.youtube.com/watch?v=o9g9NPUKeCg)
+
+
+
+[1]: https://developer.anki.com/vector/docs/initial.html "Vector SDK setup"
+[2]: https://www.digitaldreamlabs.com/products/vector-robot "Vector robot"
+[3]: https://github.com/FedericoCeratto/dashing "Dashing library"
