@@ -18,6 +18,7 @@ This program was created to accomplish three things:
 - optionally forces Vector off the charger if the battery is fully charged (after a configurable time)
 - optionally improves Vector's idle behavior (sitting still for minutes) by: mixing animations, going for a drive, rolling cubes and more
 - battery profiling: log voltages to csv file, records charge/discharge cycle times
+- automatically reconnects in case of connection loss
 - highly configurable
 
 # Screenshot (somewhat out of date)
