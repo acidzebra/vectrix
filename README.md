@@ -1,7 +1,7 @@
-# vectrix
-Vectrix is a 24/7 Anki/DDL Vector console-based robot monitor which can optionally keep Vector active and improve his idle behavior, has extensive logging options, battery profiling, and more!
+# Vectrix
+a 24/7 Anki/DDL Vector console-based robot monitor which can optionally keep Vector active and improve his idle behavior, has extensive logging options, battery profiling, and more!
 
-# Requirements:
+# Requirements
 - Windows, Mac, or Linux system
 - Python 3.x, configured Vector Python SDK and Vector robot (i.e. you can already connect to the robot with Python)
 - the Dashing library for Python: pip3 install dashing
