@@ -1,10 +1,10 @@
 Changelog
 
-note: earlier versions of Vectix (named VectorDiag) are available here: https://gist.github.com/acidzebra/74d7b288b267d7fcea8c33358d4c2e78
+note: earlier versions of VecTrix (named VectorDiag) are available here: https://gist.github.com/acidzebra/74d7b288b267d7fcea8c33358d4c2e78
 
 0.9.5 (currently in beta)
-- renamed VectorDiag to Vectrix as it's grown far beyond just diagnostics.
-- (minor) new switch rainbow_eyes - will turn eyes blue when VecTrix is active, yellow in case of error (color will revert to normal when Vectrix is not active)
+- renamed VectorDiag to VecTrix as it's grown far beyond just diagnostics.
+- (minor) new switch rainbow_eyes - will turn eyes blue when VecTrix is active, yellow in case of error (color will revert to normal when VecTrix is not active)
 - (minor) new routines for driving to random pose and looking around
 - (minor) reanimator cleanup
 - (minor) new vector_name variable - will turn log entries into a more personalized version
@@ -129,7 +129,7 @@ note: earlier versions of Vectix (named VectorDiag) are available here: https://
 
 0.3.3
 - (minor) still tinkering with accell graphs
-- (minor) added detection for starting Vectrix off dock
+- (minor) added detection for starting VecTrix off dock
 - (minor) moar code comments
 - (minor) reduced log time precision, don't need microsecond precision
 
