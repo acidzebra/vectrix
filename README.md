@@ -15,7 +15,7 @@ a 24/7 Anki/DDL Vector console-oriented Python-based robot monitor which can opt
 - many more options to configure
 
 # Screenshot (may be out of date)
-[![screenshot (may be out of date)](https://i.imgur.com/3SiETdd.jpg)
+![screenshot (may be out of date)](https://i.imgur.com/3SiETdd.jpg)
 
 # Video demo (old version)
 [![Demo video (old version)](https://img.youtube.com/vi/o9g9NPUKeCg/0.jpg)](https://www.youtube.com/watch?v=o9g9NPUKeCg)
