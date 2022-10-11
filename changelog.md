@@ -2,7 +2,14 @@ Changelog
 
 note: earlier versions of VecTrix (named VectorDiag) are available here: https://gist.github.com/acidzebra/74d7b288b267d7fcea8c33358d4c2e78
 
-0.9.5 (currently in beta)
+0.9.6 (currently in beta)
+- (minor) cleanup/formatting of log messages, extra formatting for Discord
+- (minor) added passive_monitoring_only and reduced_logging switches, the first disables all file/discord logging, reanimator, and continuous cycles (no matter what options set), the second modifies other logging options set to only include more significant messages
+- (minor) robot stuck detection (under some circumstances)
+- (minor) robot dreams
+- (minor) repeat event delay timers on some frequent events to reduce logspam (faces, cubes, ciffs, wake words, pickup)
+- (minor) started work on "recency" which remembers recent actions and messages in order to reduce log spam and maybe spawn more diverse behaviors (WIP)
+0.9.5
 - renamed VectorDiag to VecTrix as it's grown far beyond just diagnostics.
 - (minor) new switch rainbow_eyes - will turn eyes blue when VecTrix is active, yellow in case of error (color will revert to normal when VecTrix is not active)
 - (minor) new routines for driving to random pose and looking around
