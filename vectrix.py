@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-vt_version = "0.9.6-beta.1"
+vt_version = "0.9.6-beta.2"
 # --- START OF CONFIG AND INFO SECTION ---
 # --- In which we let you set preferences ---
 #
@@ -10,8 +10,8 @@ robot_serial = "00902b5d"
 vector_name                  = "Vector"                 # vector_name will be used in most log entries for a more personalized log
 refresh_rate                 = 0.1                      # time in seconds to wait before program refreshes UI. Sane values are somewhere between 0.1 and 2. Too fast might crash Vector (=needs reboot), too slow makes this program useless, default value 0.1
 headless                     = False                    # whether headless mode (=no UI) is enabled, default is False
-passive_monitoring_only      = False                    # if enabled will override and disable file logging (CSV and normal), Reanimator, and continuous cycle no matter what options you set below, default is False
-reduced_logging              = False                    # will modify other logging options set below to only include "important" log messages, decided by me on a purely subjective basis, default is False
+passive_monitoring_only      = False                     # if enabled will override and disable file logging (CSV and normal), Reanimator, and continuous cycle no matter what options you set below, default is False
+reduced_logging              = False                     # will modify other logging options set below to only include "important" log messages, decided by me on a purely subjective basis, default is False
 # optional logging switches, the defaults are usually fine, change as suits you. Accepted values are described in comments. Don't turn everything on, it will make the program useless and slow.
 header_logging               = True                     # whether to log startup info about Vectrix and Vector (version, IP, refresh rate, etc), default = True
 connect_logging              = True                     # logs connection and disconnection events, default is True
@@ -20,10 +20,10 @@ dock_events_logging          = True                     # logs events like getti
 charge_cycle_logging         = True                     # logs duration of charge and discharge cycles, default is True
 sensors_logging              = True                     # logs various sensors firing, default is True
 actions_logging              = True                     # logs various actions carried out, default is True
-face_logging                 = True                     # logs face detection, can be a bit spammy, default is True
-cube_logging                 = True                     # logs specific cube events (tapping, rotating) but only when cube is connected, default is True
+cube_logging                 = False                    # logs specific cube events (tapping, rotating) but only when cube is connected, default is False
 cube_powersaver              = False                    # if enabled, will disconnect the cube when it becomes available (experimental and possibly useless), default is False
 connect_to_cube              = False                    # will try to connect to an available cube
+face_logging                 = False                    # logs face detection, can be a bit spammy, default is False
 object_logging               = False                    # logs object appearances, spammy, default is False
 object_logging_while_low_bat = False                    # temporarily turns on object logging while looking for the charger, spammy while active, default is False
 misc_logging                 = False                    # logs some navmap and other stuff, less interesting than it sounds tbh, spammy, default is False
@@ -45,7 +45,7 @@ continuous_cycle_latest      = 17                       # won't start continuous
 # reanimator will activate if Vector is sitting still off-dock for more than [reanimator_timeout] seconds, and try to make Vector more entertaining
 reanimator                   = True                     # whether reanimator is enabled, default is True. If you want to disable specific animations, see anim_list
 reanimator_logging           = True                     # will log some details on what reanimator is doing, if you want more detail see the reanimator_debug flag elsewhere, default is True
-reanimator_combo_chance      = True                     # (NOT CURRENTLY IMPLEMENTED) 10% chance of multiple reanimator actions if set to True (animate/drive/roll cube), default is True
+reanimator_combo_chance      = True                     # 10% chance of multiple reanimator actions if set to True (animate/drive/roll cube), default is True
 reanimator_beep              = True                     # when reanimator drives Vector up to a wall, Vector will back off slowly while going beep beep like Cozmo, set to True to disable, default is False
 reanimator_timeout           = 4.5                      # time in seconds Vector needs to be idle before engaging reanimator. Idle is defined as off-dock with OK battery and are_motors_moving and are_wheels_moving both set to False, default is 5
 reanimator_min_distance      = 100                      # minimum required free space in front of Vector before reanimator is free to go for a drive, default is 100
@@ -1281,6 +1281,8 @@ def robot_mix_animations():
             request = robot_control_request(1,False)
             if not request:
                 return
+            else:
+                eyecolor_future = myrobot.behavior.set_eye_color(eye_hue_blue,1)
         else:
             return
         # pick a random set of animations
@@ -1651,6 +1653,8 @@ def robot_roll_cube():
             if debug_logging and not reduced_logging:
                 log.put("[debugs] robot_roll_cube: failed control")
             return
+        else:
+            eyecolor_future = myrobot.behavior.set_eye_color(eye_hue_blue,1)
             if debug_logging and not reduced_logging:
                 log.put("[debugs] robot_roll_cube: have control")
         if reanimator_debug:
