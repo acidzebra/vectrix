@@ -134,7 +134,7 @@ conn_object = myrobot.conn
 # secret hidden debug switches, muahaha
 reanimator_debug                = False   # spammy but will tell you exactly what reanimator is doing
 endless_reanimator              = False   # will endlessly run reanimator, overriding Vector's normal behaviors until the battery goes low
-debug_logging                   = True   # logs extended debug messages about robot activity, program activity, etc, default is False
+debug_logging                   = False   # logs extended debug messages about robot activity, program activity, etc, default is False
 debug_logging_interval          = 0       # how often we log a summary of debug status in seconds, default is whatever it says currently. Set to 0 to disable intermittent recap (but keep all the rest of the debug msgs)
 robot_status_monitoring         = 1       # start status thread or not (disabling will impair this program because we won't get crucial robot status data)
 robot_battery_monitoring        = 1       # start battery thread or not (disabling will impair this program because we won't get dock/lowpower data)
