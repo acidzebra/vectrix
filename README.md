@@ -22,7 +22,7 @@ This program was created to accomplish three things:
 - highly configurable
 
 # Safety notice
-While I take care not to program features that will send Vector careening over a ledge ), there are many unexpected situations that can happen to Vector even without this software. I have my Vectors contained in a fairly large play space with raised walls. If you are using the Reanimator feature (on by default), don't leave your Vector unsupervised or in a place where a fall might cause damage.
+While I take care not to program features that will send Vector careening over a ledge, there are many unexpected events that can happen to Vector even without this software. I have my Vectors contained in a fairly large play space with raised walls. If you are using the Reanimator feature (on by default), don't leave your Vector unsupervised or in a place where a fall might cause damage.
 
 # Screenshot (somewhat out of date)
 ![screenshot (may be out of date)](https://i.imgur.com/3SiETdd.jpg)
