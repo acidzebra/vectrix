@@ -4,7 +4,7 @@ vt_version = "0.9.6-beta.1"
 # --- In which we let you set preferences ---
 #
 # ROBOT SERIAL NUMBER, YOU NEED TO EDIT THIS AND REPLACE WITH YOUR ROBOT'S SERIAL NUMBER
-robot_serial = "00301a24"
+robot_serial = "00902b5d"
 #
 # MANY SWITCHES, DEFAULTS ARE FINE, CHANGE AS DESIRED
 vector_name                  = "Vector"                 # vector_name will be used in most log entries for a more personalized log
@@ -20,10 +20,10 @@ dock_events_logging          = True                     # logs events like getti
 charge_cycle_logging         = True                     # logs duration of charge and discharge cycles, default is True
 sensors_logging              = True                     # logs various sensors firing, default is True
 actions_logging              = True                     # logs various actions carried out, default is True
-cube_logging                 = False                    # logs specific cube events (tapping, rotating) but only when cube is connected, default is False
+face_logging                 = True                     # logs face detection, can be a bit spammy, default is True
+cube_logging                 = True                     # logs specific cube events (tapping, rotating) but only when cube is connected, default is True
 cube_powersaver              = False                    # if enabled, will disconnect the cube when it becomes available (experimental and possibly useless), default is False
 connect_to_cube              = False                    # will try to connect to an available cube
-face_logging                 = False                    # logs face detection, can be a bit spammy, default is False
 object_logging               = False                    # logs object appearances, spammy, default is False
 object_logging_while_low_bat = False                    # temporarily turns on object logging while looking for the charger, spammy while active, default is False
 misc_logging                 = False                    # logs some navmap and other stuff, less interesting than it sounds tbh, spammy, default is False
@@ -45,7 +45,7 @@ continuous_cycle_latest      = 17                       # won't start continuous
 # reanimator will activate if Vector is sitting still off-dock for more than [reanimator_timeout] seconds, and try to make Vector more entertaining
 reanimator                   = True                     # whether reanimator is enabled, default is True. If you want to disable specific animations, see anim_list
 reanimator_logging           = True                     # will log some details on what reanimator is doing, if you want more detail see the reanimator_debug flag elsewhere, default is True
-reanimator_combo_chance      = True                     # 10% chance of multiple reanimator actions if set to True (animate/drive/roll cube) (currently not used), default is True
+reanimator_combo_chance      = True                     # (NOT CURRENTLY IMPLEMENTED) 10% chance of multiple reanimator actions if set to True (animate/drive/roll cube), default is True
 reanimator_beep              = True                     # when reanimator drives Vector up to a wall, Vector will back off slowly while going beep beep like Cozmo, set to True to disable, default is False
 reanimator_timeout           = 4.5                      # time in seconds Vector needs to be idle before engaging reanimator. Idle is defined as off-dock with OK battery and are_motors_moving and are_wheels_moving both set to False, default is 5
 reanimator_min_distance      = 100                      # minimum required free space in front of Vector before reanimator is free to go for a drive, default is 100
@@ -129,12 +129,12 @@ except:
 # --- In which we define the robot, ui, and various states for later use ---
 # define the robot with the configured options
 global myrobot
-myrobot = anki_vector.AsyncRobot(robot_serial,default_logging=headless,behavior_control_level=None,enable_face_detection=face_logging,estimate_facial_expression=face_logging,enable_custom_object_detection=object_logging,enable_nav_map_feed=misc_logging,behavior_activation_timeout=15, show_viewer=show_viewer, show_3d_viewer=show_3dviewer)
+myrobot = anki_vector.AsyncRobot(robot_serial,default_logging=True,behavior_control_level=None,enable_face_detection=face_logging,estimate_facial_expression=face_logging,enable_custom_object_detection=object_logging,enable_nav_map_feed=misc_logging,behavior_activation_timeout=15, show_viewer=show_viewer, show_3d_viewer=show_3dviewer)
 conn_object = myrobot.conn
 # secret hidden debug switches, muahaha
 reanimator_debug                = False   # spammy but will tell you exactly what reanimator is doing
 endless_reanimator              = False   # will endlessly run reanimator, overriding Vector's normal behaviors until the battery goes low
-debug_logging                   = False   # logs extended debug messages about robot activity, program activity, etc, default is False
+debug_logging                   = True   # logs extended debug messages about robot activity, program activity, etc, default is False
 debug_logging_interval          = 0       # how often we log a summary of debug status in seconds, default is whatever it says currently. Set to 0 to disable intermittent recap (but keep all the rest of the debug msgs)
 robot_status_monitoring         = 1       # start status thread or not (disabling will impair this program because we won't get crucial robot status data)
 robot_battery_monitoring        = 1       # start battery thread or not (disabling will impair this program because we won't get dock/lowpower data)
@@ -186,6 +186,7 @@ robot_driving                   = False
 control_response                = False
 robot_current_control_level     = None
 control_or_release              = 0
+force_control                   = False
 # truth table
 fullcharge                      = 0
 lowpower                        = 0
@@ -985,10 +986,10 @@ def robot_event_thread():
             log.put("[events] " + str(vector_name) + " senses a cube is available")
             recent_cube_available = 1
         if cube_powersaver:
-            if cube_logging and not reduced_logging:
+            if debug_logging:
                 log.put("[events] cube_powersaver: attempting to disconnect")
             myrobot.world.disconnect_cube()
-            if cube_logging and not reduced_logging:
+            if debug_logging:
                 log.put("[events] cube_powersaver: attempt completed")
     def on_robot_object_tapped(myrobot, event_type, event, evt):
         global recent_cube_tapped
@@ -996,10 +997,10 @@ def robot_event_thread():
             log.put("[events] " + str(vector_name) + " senses a cube was tapped")
             recent_cube_tapped = 1
         if cube_powersaver:
-            if cube_logging and not reduced_logging:
+            if debug_logging:
                 log.put("[events] cube_powersaver: attempting to disconnect")
             myrobot.world.disconnect_cube()
-            if cube_logging and not reduced_logging:
+            if debug_logging:
                 log.put("[events] cube_powersaver: attempt completed")
     def on_robot_object_up_axis_changed(myrobot, event_type, event, evt):
         global recent_cube_rotated
@@ -1007,10 +1008,10 @@ def robot_event_thread():
             log.put("[events] " + str(vector_name) + " senses a cube was rotated")
             recent_cube_rotated = 1
         if cube_powersaver:
-            if cube_logging and not reduced_logging:
+            if debug_logging:
                 log.put("[events] cube_powersaver: attempting to disconnect")
             myrobot.world.disconnect_cube()
-            if cube_logging and not reduced_logging:
+            if debug_logging:
                 log.put("[events] cube_powersaver: attempt completed")
     # set up event subscriptions depending on config switches
     if face_logging:
@@ -1133,7 +1134,7 @@ def yeetbot():
                 log.put("[debugs] continuous_cycle: Requesting control of " + str(vector_name))
             if dock_events_logging and robot_calmpower:
                 log.put("[cycles] wake up, " + str(vector_name) + "!")
-            request = robot_control_request(1)
+            request = robot_control_request(1,True)
             if not request:
                 threadrunning = 0
                 if debug_logging:
@@ -1181,7 +1182,7 @@ def yeetbot():
         threadrunning = 0
         robot_control_blocking = 0
         incontrol = 0
-        robot_control_request(0)
+        robot_control_request(0,False)
         return
     except Exception as e:
         if debug_logging:
@@ -1191,8 +1192,13 @@ def yeetbot():
         force_off_dock_failure = 1
         robot_control_blocking = 0
         if incontrol == 1 and robot_connected == 1:
-            request = robot_control_request(0)
+            request = robot_control_request(0,False)
         return
+    vector_is_idle = 0
+    threadrunning = 0
+    robot_control_blocking = 0
+    incontrol = 0
+    request = robot_control_request(0,False)
     return
 # reanimator will make Vector do fun stuff when idle for [reanimator_timeout]!
 def reanimator_thread():
@@ -1272,7 +1278,7 @@ def robot_mix_animations():
     try:
         # request control
         if robot_good_to_go:
-            request = robot_control_request(1)
+            request = robot_control_request(1,False)
             if not request:
                 return
         else:
@@ -1316,7 +1322,7 @@ def robot_mix_animations():
             timeout = timeout + (refresh_rate/2)
             sleep(refresh_rate/2)
         if not robot_good_to_go:
-            request = robot_control_request(0)
+            request = robot_control_request(0,False)
             eyecolor_future.cancel()
             return
         sleep(2)
@@ -1325,7 +1331,7 @@ def robot_mix_animations():
         eyecolor_future.cancel()
         if debug_logging:
             log.put("[debugs] robot_mix_animations: Animation played, releasing")
-        request = robot_control_request(0)
+        request = robot_control_request(0,False)
     except Exception as e:
         if debug_logging:
             log.put("[except] robot_mix_animations: UNHANDLED E: " + repr(e))
@@ -1347,9 +1353,11 @@ def robot_random_drive():
         if debug_logging:
             log.put("[debugs] robot_random_drive requesting control")
         if robot_good_to_go:
-            request = robot_control_request(1)
+            request = robot_control_request(1,False)
             if not request:
                 return
+            else:
+                eyecolor_future = myrobot.behavior.set_eye_color(eye_hue_blue,1)
         else:
             return
         total_steps_count = 0
@@ -1384,10 +1392,10 @@ def robot_random_drive():
             lift_future.cancel()
             eyecolor_future.cancel()
             if not robot_good_to_go:
-                request = robot_control_request(0)
+                request = robot_control_request(0,False)
                 return
             if robot_current_control_level == None:
-                request = robot_control_request(1)
+                request = robot_control_request(1,False)
                 if not request:
                     return
             # grab 3 rangefinder readings at -8,0,8 degrees rotation
@@ -1405,7 +1413,7 @@ def robot_random_drive():
                     if not robot_good_to_go:
                         break
                     if robot_current_control_level == None:
-                        request = robot_control_request(1)
+                        request = robot_control_request(1,False)
                         if not request:
                             return
                     if timeout >= 2.5:
@@ -1419,14 +1427,14 @@ def robot_random_drive():
                 turn_future.cancel()
                 eyecolor_future.cancel()
                 if not robot_good_to_go:
-                    request = robot_control_request(0)
+                    request = robot_control_request(0,False)
                     return
                 x += 1
             if not robot_good_to_go:
-                request = robot_control_request(0)
+                request = robot_control_request(0,False)
                 return
             if robot_current_control_level == None:
-                request = robot_control_request(1)
+                request = robot_control_request(1,False)
                 if not request:
                     return
             if reanimator_debug and not reduced_logging:
@@ -1447,7 +1455,7 @@ def robot_random_drive():
             if prox_array[0] > reanimator_min_distance and prox_array[1] > reanimator_min_distance and prox_array[2] > reanimator_min_distance:
                 # doublecheck because range measurements can be wonky
                 if not robot_good_to_go:
-                    request = robot_control_request(0)
+                    request = robot_control_request(0,False)
                     return
                 x = 0
                 range_cali = 0
@@ -1456,7 +1464,7 @@ def robot_random_drive():
                     range_cali = range_cali + robot_distance_mm
                     sleep(refresh_rate*1.5)
                     if not robot_good_to_go:
-                        request = robot_control_request(0)
+                        request = robot_control_request(0,False)
                         return
                     x += 1
                 # take an average and subtract a safety margin
@@ -1474,7 +1482,7 @@ def robot_random_drive():
                         log.put("[ranmtr] robot_random_drive: No obstacles for max range! " + str(vector_name) + " is going to drive for "+str(final_range)+"mm at "+str(round(vector_speed,2))+"mm/s!")
                 clear_sailing = 0
                 if robot_current_control_level == None:
-                    request = robot_control_request(1)
+                    request = robot_control_request(1,False)
                     if not request:
                         return
                 drive_future = myrobot.behavior.drive_straight(distance_mm(final_range), speed_mmps(vector_speed), should_play_anim=True)
@@ -1493,10 +1501,10 @@ def robot_random_drive():
                 drive_future.cancel()
                 eyecolor_future.cancel()
                 if not robot_good_to_go:
-                    request = robot_control_request(0)
+                    request = robot_control_request(0,False)
                     return
                 if robot_current_control_level == None:
-                    request = robot_control_request(1)
+                    request = robot_control_request(1,False)
                     if not request:
                         return
                 release_motors_future = myrobot.motors.set_wheel_motors(0, 0)
@@ -1514,7 +1522,7 @@ def robot_random_drive():
                         range_cali = range_cali + robot_distance_mm
                         sleep(refresh_rate*1.5)
                         if not robot_good_to_go:
-                            request = robot_control_request(0)
+                            request = robot_control_request(0,False)
                             return
                         x += 1
                     final_range = (range_cali/5)
@@ -1522,10 +1530,10 @@ def robot_random_drive():
                         if reanimator_debug and not reduced_logging:
                             log.put("[ranmtr] robot_random_drive: whoa that wall is close ("+str(final_range)+") to " + str(vector_name) + ", better back up")
                         if not robot_good_to_go:
-                            robot_control_request(0)
+                            robot_control_request(0,False)
                             return
                         if robot_current_control_level == None:
-                            request = robot_control_request(1)
+                            request = robot_control_request(1,False)
                             if not request:
                                 return
                         if rainbow_eyes and not robot_current_control_level == None:
@@ -1553,10 +1561,10 @@ def robot_random_drive():
                             say_future.cancel()
                             saytext = 0
                         if not robot_good_to_go:
-                            request = robot_control_request(0)
+                            request = robot_control_request(0,False)
                             return
                         if robot_current_control_level == None:
-                            request = robot_control_request(1)
+                            request = robot_control_request(1,False)
                             if not request:
                                 return         
                         release_motors_future = myrobot.motors.set_wheel_motors(0, 0)
@@ -1581,7 +1589,7 @@ def robot_random_drive():
                             giggle_future.cancel()
                             eyecolor_future.cancel()
                         if not robot_good_to_go:
-                            request = robot_control_request(0)
+                            request = robot_control_request(0,False)
                             return
                         #turn around if we backed up	
                         turnchance = random.randint(1, 100)
@@ -1589,7 +1597,7 @@ def robot_random_drive():
                             if reanimator_debug and not reduced_logging:
                                 log.put("[ranmtr] " + str(vector_name) + " is doing a 180")
                             if robot_current_control_level == None:
-                                request = robot_control_request(1)
+                                request = robot_control_request(1,False)
                                 if not request:
                                     return
                             turn_future = myrobot.behavior.turn_in_place(degrees(180))	
@@ -1610,7 +1618,7 @@ def robot_random_drive():
                             lift_future.cancel()
                             eyecolor_future.cancel()
                             if not robot_good_to_go:
-                                robot_control_request(0)
+                                robot_control_request(0,False)
                                 return
                     else:
                         if reanimator_debug and not reduced_logging:
@@ -1627,7 +1635,7 @@ def robot_random_drive():
         if debug_logging:
             log.put("[except] robot_random_drive UNHANDLED E: "+ repr(e))
     eyecolor_future.cancel()
-    request = robot_control_request(0)
+    request = robot_control_request(0,False)
     if debug_logging:
         log.put("[debugs] robot_random_drive complete")
     return
@@ -1638,7 +1646,7 @@ def robot_roll_cube():
     if reanimator_logging:
         log.put("[ranmtr] " + str(vector_name) + " is thinking about rolling a cube")  
     try:
-        request = robot_control_request(1)
+        request = robot_control_request(1,False)
         if not request:
             if debug_logging and not reduced_logging:
                 log.put("[debugs] robot_roll_cube: failed control")
@@ -1668,10 +1676,10 @@ def robot_roll_cube():
         if debug_logging:
             log.put("[except] robot_roll_cube: Drive to cube issue: "+str(e))
     if not robot_good_to_go:
-        request = robot_control_request(0)
+        request = robot_control_request(0,False)
         return
     if robot_current_control_level == None:
-        request = robot_control_request(1)
+        request = robot_control_request(1,False)
         if not request:
             return
     try:
@@ -1693,7 +1701,7 @@ def robot_roll_cube():
         roll_the_cube.cancel()
         eyecolor_future.cancel()
         rollable_cube = 0
-        request = robot_control_request(0)
+        request = robot_control_request(0,False)
     except Exception as e:
         if debug_logging:
             log.put("[except] robot_roll_cube: Roll cube issue: "+str(e))
@@ -1725,7 +1733,7 @@ def robot_go_to_random_pose():
         if reanimator_debug:
             log.put(str(vector_name) + " is going to pose: "+str(pose))
         if robot_good_to_go:
-            request = robot_control_request(1)
+            request = robot_control_request(1,False)
             if not request:
                 return
         else:
@@ -1745,7 +1753,7 @@ def robot_go_to_random_pose():
             sleep(refresh_rate/2)	
         pose_future.cancel()
         eyecolor_future.cancel()
-        robot_control_request(0)
+        robot_control_request(0,False)
     except Exception as e:
         if debug_logging:
             log.put("[debugs] robot_go_to_random_pose E: "+repr(e))
@@ -1758,7 +1766,7 @@ def robot_look_around():
         if reanimator_debug:
             log.put(str(vector_name) + " is having a good look around")
         if robot_good_to_go:
-            request = robot_control_request(1)
+            request = robot_control_request(1,False)
             if not request:
                 return
         else:
@@ -1777,7 +1785,7 @@ def robot_look_around():
             sleep(refresh_rate/2)	
         look_around_future.cancel()
         eyecolor_future.cancel()
-        robot_control_request(0)
+        robot_control_request(0,False)
     except Exception as e:
         if debug_logging:
             log.put("[debugs] robot_look_around E: "+repr(e))
@@ -1805,18 +1813,21 @@ def bool_to_value(inputbool):
         if debug_logging:
             log.put("[system] bool_to_value: that was not a boolean. E: "+repr(e))
 # robot_control_request is responsible for gaining control over the connected robot and releasing it.
-def robot_control_request(control_or_release):
+def robot_control_request(control_or_release, force_control):
     global myrobot, control_response
     global log
     control_response = False
     # control request
     if control_or_release == 1:
         try:
-            if robot_connected == 1 and robot_batlevel > 1 and not robot_held and not robot_pickup and not robot_falling and not robot_cliffdetect:
-                controlrequest = myrobot.conn.request_control(behavior_control_level=ControlPriorityLevel.DEFAULT_PRIORITY, timeout=10)
+            if robot_connected == 1 and robot_batlevel > 1 and not robot_held and not robot_pickup and not robot_falling:
+                if force_control:
+                    controlrequest = myrobot.conn.request_control(behavior_control_level=ControlPriorityLevel.OVERRIDE_BEHAVIORS_PRIORITY, timeout=10)
+                else:
+                    controlrequest = myrobot.conn.request_control(behavior_control_level=ControlPriorityLevel.DEFAULT_PRIORITY, timeout=10)
                 timeout = 0
                 while str(controlrequest).find("pending") != -1:
-                    if timeout >= 7 or robot_connected == 0 or robot_batlevel == 1 or robot_held or robot_pickup or robot_falling or robot_cliffdetect:
+                    if timeout >= 7 or robot_connected == 0 or robot_batlevel == 1 or robot_held or robot_pickup or robot_falling:
                         controlrequest.cancel()
                         if debug_logging:
                             if timeout >= 7:
@@ -2333,7 +2344,7 @@ while True:
                             log.put("[chargr] " + str(vector_name) + " has left the charger with a full battery charge")
                         partial = 0
                         if continuous_cycle and dock_events_logging and not reduced_logging:
-                            log.put("[system] continuous_cycle: active, current cycle for " + str(vector_name) + ": " + str(yeetcounter))
+                            log.put("[system] continuous cycle is active, current cycle for " + str(vector_name) + " is: " + str(yeetcounter))
                             yeetcounter += 1
                     # left dock but not with full charge 
                     if fullcharge == 0 and docked == 1 and charging == 1:

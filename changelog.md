@@ -9,6 +9,8 @@ note: earlier versions of VecTrix (named VectorDiag) are available here: https:/
 - (minor) robot dreams
 - (minor) repeat event delay timers on some frequent events to reduce logspam (faces, cubes, ciffs, wake words, pickup)
 - (minor) started work on "recency" which remembers recent actions and messages in order to reduce log spam and maybe spawn more diverse behaviors (WIP)
+- (minor) cleanup, fixes, and cosmetics
+
 0.9.5
 - renamed VectorDiag to VecTrix as it's grown far beyond just diagnostics.
 - (minor) new switch rainbow_eyes - will turn eyes blue when VecTrix is active, yellow in case of error (color will revert to normal when VecTrix is not active)
