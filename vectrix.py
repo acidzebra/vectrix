@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-vt_version = "0.9.6-beta.2"
+vt_version = "0.9.6-beta.3"
 # --- START OF CONFIG AND INFO SECTION ---
 # --- In which we let you set preferences ---
 #
@@ -10,8 +10,8 @@ robot_serial = "00902b5d"
 vector_name                  = "Vector"                 # vector_name will be used in most log entries for a more personalized log
 refresh_rate                 = 0.1                      # time in seconds to wait before program refreshes UI. Sane values are somewhere between 0.1 and 2. Too fast might crash Vector (=needs reboot), too slow makes this program useless, default value 0.1
 headless                     = False                    # whether headless mode (=no UI) is enabled, default is False
-passive_monitoring_only      = False                     # if enabled will override and disable file logging (CSV and normal), Reanimator, and continuous cycle no matter what options you set below, default is False
-reduced_logging              = False                     # will modify other logging options set below to only include "important" log messages, decided by me on a purely subjective basis, default is False
+passive_monitoring_only      = False                    # if enabled will override and disable file logging (CSV and normal), Reanimator, and continuous cycle no matter what options you set below, default is False
+reduced_logging              = False                    # will modify other logging options set below to only include "important" log messages, decided by me on a purely subjective basis, default is False
 # optional logging switches, the defaults are usually fine, change as suits you. Accepted values are described in comments. Don't turn everything on, it will make the program useless and slow.
 header_logging               = True                     # whether to log startup info about Vectrix and Vector (version, IP, refresh rate, etc), default = True
 connect_logging              = True                     # logs connection and disconnection events, default is True
@@ -20,10 +20,10 @@ dock_events_logging          = True                     # logs events like getti
 charge_cycle_logging         = True                     # logs duration of charge and discharge cycles, default is True
 sensors_logging              = True                     # logs various sensors firing, default is True
 actions_logging              = True                     # logs various actions carried out, default is True
-cube_logging                 = False                    # logs specific cube events (tapping, rotating) but only when cube is connected, default is False
+face_logging                 = True                     # logs face detection, can be a bit spammy, default is False
+cube_logging                 = True                     # logs specific cube events (tapping, rotating) but only when cube is connected, default is False
 cube_powersaver              = False                    # if enabled, will disconnect the cube when it becomes available (experimental and possibly useless), default is False
 connect_to_cube              = False                    # will try to connect to an available cube
-face_logging                 = False                    # logs face detection, can be a bit spammy, default is False
 object_logging               = False                    # logs object appearances, spammy, default is False
 object_logging_while_low_bat = False                    # temporarily turns on object logging while looking for the charger, spammy while active, default is False
 misc_logging                 = False                    # logs some navmap and other stuff, less interesting than it sounds tbh, spammy, default is False
@@ -86,6 +86,14 @@ ui_color_7                   = 7
 # # reds and blues # ui_color_0 = 0 # ui_color_1 = 5 # ui_color_2 = 1 # ui_color_3 = 4 # ui_color_4 = 4 # ui_color_5 = 4 # ui_color_6 = 1 # ui_color_7 = 5
 # # mono # ui_color_0 = 0 # ui_color_1 = 7 # ui_color_2 = 7 # ui_color_3 = 7 # ui_color_4 = 7 # ui_color_5 = 7 # ui_color_6 = 7 # ui_color_7 = 7
 #
+# debug switches
+reanimator_debug                = False                 # spammy but will tell you exactly what reanimator is doing
+endless_reanimator              = False                 # will endlessly run reanimator, overriding Vector's normal behaviors until the battery goes low
+debug_logging                   = False                 # logs extended debug messages about robot activity, program activity, etc, default is False
+debug_logging_interval          = 0                     # how often we log a summary of debug status in seconds, default is whatever it says currently. Set to 0 to disable intermittent recap (but keep all the rest of the debug msgs)
+robot_status_monitoring         = 1                     # start status thread or not (disabling will impair this program because we won't get crucial robot status data)
+robot_battery_monitoring        = 1                     # start battery thread or not (disabling will impair this program because we won't get dock/lowpower data)
+robot_event_monitoring          = 1                     # start event monitoring thread or not (most of the program will probably still work if disabled)
 # --- END OF CONFIG AND INFO SECTION ---
 # --- START OF LIBRARY IMPORT SECTION ---
 # --- In which we import needed libraries and inform you if they're missing ---
@@ -131,14 +139,6 @@ except:
 global myrobot
 myrobot = anki_vector.AsyncRobot(robot_serial,default_logging=True,behavior_control_level=None,enable_face_detection=face_logging,estimate_facial_expression=face_logging,enable_custom_object_detection=object_logging,enable_nav_map_feed=misc_logging,behavior_activation_timeout=15, show_viewer=show_viewer, show_3d_viewer=show_3dviewer)
 conn_object = myrobot.conn
-# secret hidden debug switches, muahaha
-reanimator_debug                = False   # spammy but will tell you exactly what reanimator is doing
-endless_reanimator              = False   # will endlessly run reanimator, overriding Vector's normal behaviors until the battery goes low
-debug_logging                   = False   # logs extended debug messages about robot activity, program activity, etc, default is False
-debug_logging_interval          = 0       # how often we log a summary of debug status in seconds, default is whatever it says currently. Set to 0 to disable intermittent recap (but keep all the rest of the debug msgs)
-robot_status_monitoring         = 1       # start status thread or not (disabling will impair this program because we won't get crucial robot status data)
-robot_battery_monitoring        = 1       # start battery thread or not (disabling will impair this program because we won't get dock/lowpower data)
-robot_event_monitoring          = 1       # start event monitoring thread or not (most of the program will probably still work if disabled)
 # system variables
 global log
 log                             = queue.Queue()
@@ -335,7 +335,7 @@ recent_face_seen_timer          = 0
 #dreamstuff
 dream_delay_counter             = 1
 dreamtoggle                    = 0
-dreamlist                       = ["electric sheep","the biggest charger ever","being stuck on the charger","rolling endless cubes","lifting the biggest cube ever","exploring the world","a giant cube","stacking cubes to the sky","lifting cubes all day","an endless supply of cubes","being stuck without tracks","being petted","flying","having all-terrain wheels","winning at blackjack","falling","having rocket boosters","playing on a desk full of Vectors","being lost in a maze","upgrades","being a giant robot","playing with you","having very low battery power","infinite battery power","being unable to find a cube","seeing different robots","a golden cube","having a little robot pet","playing with a cube","playing with a ball","going outside"]
+dreamlist                       = ["electric sheep","the biggest charger ever","being stuck on the charger","rolling endless cubes","lifting the biggest cube ever","exploring the world","a giant cube","stacking cubes to the sky","lifting cubes all day","an endless supply of cubes","being stuck without tracks","being petted","flying","having all-terrain wheels","winning at blackjack","falling","having rocket boosters","playing on a desk full of Vectors","being lost in a maze","upgrades","being a giant robot","playing with you","having very low battery power","infinite battery power","being unable to find a cube","seeing different robots","a golden cube","having a little robot pet","playing with a cube","playing with a ball","going outside","a rounded cube?!?","playing with little brother Cozmo","having legs","being a giant mecha-robot","being able to jump","a self-rolling cube","being lost in a maze of cubes","a cake"]
 # reanimator list with anim_timer_beep_01 
 anim_list                       = ["anim_cube_psychic_01","anim_cube_success_getout_01","anim_cubeconnection_connectionfailure_01","anim_cubeconnection_connectionlost_01","anim_cubeconnection_connectionsuccess_01","anim_cubedocking_fail_01","anim_explorer_huh_close_01","anim_explorer_huh_far_01","anim_eyecontact_giggle_01","anim_eyecontact_giggle_01_head_angle_20","anim_eyecontact_giggle_01_head_angle_-20","anim_eyecontact_giggle_01_head_angle_40","anim_findcube_request_01","anim_fistbump_success_01","anim_fistbump_success_02","anim_fistbump_success_03","anim_freeplay_reacttoface_identified_01","anim_freeplay_reacttoface_identified_02","anim_freeplay_reacttoface_identified_03","anim_greeting_goodbye_01","anim_greeting_goodbye_02","anim_greeting_goodmorning_01","anim_greeting_goodmorning_02","anim_greeting_hello_01","anim_greeting_hello_02","anim_handdetection_reaction_01","anim_handdetection_reaction_02","anim_heldonpalm_edge_nervous_01","anim_heldonpalm_edge_relaxed_01","anim_heldonpalm_jolt_01","anim_heldonpalm_looking_nervous_01","anim_heldonpalm_nestling_01","anim_heldonpalm_pickup_nervous_01","anim_heldonpalm_pickup_relaxed_01","anim_heldonpalm_putdown_nervous_01","anim_heldonpalm_putdown_relaxed_01","anim_heldonpalm_relaxed_idle_01","anim_heldonpalm_transition2relaxed_01","anim_keepaway_backup_01","anim_keepaway_bored_idle_01","anim_keepaway_bored_idle_02","anim_keepaway_getin_focus_01","anim_keepaway_getout_engaged_01","anim_keepaway_getout_frustrated_01","anim_keepaway_getout_loseinterest_01","anim_keepaway_getout_satisfied_01","anim_keepaway_getreadyset_01","anim_keepaway_hit_reaction_01","anim_keepaway_idle_glance_01","anim_keepaway_idle_side_02","anim_keepaway_idleliftdown_01","anim_keepaway_idleliftdown_02","anim_keepaway_miss_reaction_01","anim_keepaway_pounce_mousetrap_04","anim_keepaway_pounce_quick_01","anim_keepaway_pounce_shake_02","anim_keepaway_pounce_slow_05","anim_onboarding_cube_psychic_01","anim_onboarding_cube_reacttocube","anim_onboarding_cube_success_getout_01","anim_onboarding_reacttoface_happy_01","anim_onboarding_reacttoface_happy_01_head_angle_20","anim_onboarding_reacttoface_happy_01_head_angle_-20","anim_onboarding_reacttoface_happy_01_head_angle_40","anim_petting_blissloop_01","anim_petting_blissloop_02","anim_petting_blissloop_03","anim_petting_lvl1_01","anim_petting_lvl2_01","anim_petting_lvl3_01","anim_petting_lvl4_01","anim_photo_focus_01","anim_photo_shutter_01","anim_pounce_01","anim_pounce_02","anim_pounce_03","anim_pounce_04","anim_pounce_fail_01","anim_pounce_fail_02","anim_pounce_fail_03","anim_pounce_fail_04","anim_pounce_long_01","anim_pounce_success_01","anim_pounce_success_02","anim_pounce_success_03","anim_pounce_success_04","anim_reacttoblock_dropfail_01","anim_reacttoblock_dropfail_02","anim_reacttoblock_dropsuccess_01","anim_reacttoblock_focusedeyes_01","anim_reacttoblock_frustrated_01","anim_reacttoblock_happydetermined_01","anim_reacttoblock_happydetermined_02","anim_reacttoblock_success_01","anim_reacttoface_unidentified_01_head_angle_20","anim_reacttoface_unidentified_01_head_angle_-20","anim_reacttoface_unidentified_01_head_angle_40","anim_reacttoface_unidentified_02_head_angle_20","anim_reacttoface_unidentified_02_head_angle_40","anim_reacttoface_unidentified_03_head_angle_20","anim_reacttoface_unidentified_03_head_angle_-20","anim_reacttohabitat_subtle_01","anim_referencing_curious_01","anim_referencing_curious_01_head_angle_20","anim_referencing_curious_01_head_angle_-20","anim_referencing_curious_01_head_angle_40","anim_referencing_giggle_01","anim_referencing_giggle_01_head_angle_20","anim_referencing_giggle_01_head_angle_-20","anim_referencing_giggle_01_head_angle_40","anim_referencing_smile_01","anim_referencing_smile_01_head_angle_20","anim_referencing_smile_01_head_angle_-20","anim_referencing_smile_01_head_angle_40","anim_referencing_squint_01","anim_referencing_squint_01_head_angle_20","anim_referencing_squint_01_head_angle_-20","anim_referencing_squint_01_head_angle_40","anim_referencing_squint_02","anim_referencing_squint_02_head_angle_20","anim_referencing_squint_02_head_angle_-20","anim_referencing_squint_02_head_angle_40","anim_sudden_obstacle_react_01","anim_sudden_obstacle_react_02","anim_timer_beep_01","anim_timer_emote_01","anim_triple_backup","anim_vc_alrighty_01","anim_vc_laser_lookdown_01","anim_vc_reaction_nofaceheardyou_01"]
 # define the UI
@@ -1304,6 +1304,8 @@ def robot_mix_animations():
             lift_track_2 = False
         else:
             lift_track_2 = True
+        sleep(0.2)
+        eyecolor_future.cancel()
         if reanimator_debug:
             log.put("[ranmtr] " + str(vector_name) + " will combine "+_ANIMATION1+" B:"+str(body_track_1)+",H:"+str(head_track_1)+",L:"+str(lift_track_1)+" and "+_ANIMATION2+" B:"+str(body_track_2)+",H:"+str(head_track_2)+",L:"+str(lift_track_2))
         if reanimator_logging:
@@ -1362,6 +1364,8 @@ def robot_random_drive():
                 eyecolor_future = myrobot.behavior.set_eye_color(eye_hue_blue,1)
         else:
             return
+        sleep(0.2)
+        eyecolor_future.cancel()
         total_steps_count = 0
         while total_steps_count < 3 and robot_good_to_go:      
             release_motors_future = myrobot.motors.set_wheel_motors(0, 0)
@@ -1661,6 +1665,8 @@ def robot_roll_cube():
             log.put("[ranmtr] robot_roll_cube: " + str(vector_name) + " is driving to cube")
         drive_to_cube = myrobot.behavior.go_to_object(myrobot.world.light_cube, distance_mm(100.0))
         timeout = 0
+        sleep(0.2)
+        eyecolor_future.cancel()
         while str(drive_to_cube).find("pending") != -1:
             if not robot_good_to_go or robot_current_control_level == None:
                 if reanimator_debug and not reduced_logging:
@@ -1845,9 +1851,10 @@ def robot_control_request(control_or_release, force_control):
                     timeout = timeout + refresh_rate
                     sleep(refresh_rate)
                 if rainbow_eyes and not robot_current_control_level == None:
-                    eyecolor_future = myrobot.behavior.set_eye_color(eye_hue_green,1)    
+                    eyecolor_future = myrobot.behavior.set_eye_color(eye_hue_green,1)
+                    sleep(0.2)
+                    eyecolor_future.cancel()
                 sleep(1)
-                eyecolor_future.cancel()
                 control_response = True
                 return control_response
             else:
@@ -1968,7 +1975,7 @@ if connect_to_cube:
         if debug_logging:
             log.put("[except] issue initializing the cube connection: "+repr(e))
 # start up data gathering thread
-if robot_sensor_thread_running  == 0 and robot_status_monitoring == 1:
+if robot_sensor_thread_running  == 0:
     try:
         robot_sensor_thread_running = 1
         Thread(name = "VT-sens", target = robot_sensor_thread).start()
@@ -1976,7 +1983,7 @@ if robot_sensor_thread_running  == 0 and robot_status_monitoring == 1:
         log.put("[except] FATAL: Issue starting thread for robot_sensor_thread, exiting. E: "+repr(e))
         exit()
 # start up battery monitoring thread
-if robot_battery_thread_running  == 0 and robot_battery_monitoring == 1:
+if robot_battery_thread_running  == 0:
     try:
         robot_battery_thread_running = 1
         Thread(name = "VT-batt", target = robot_battery_thread).start()
@@ -1984,7 +1991,7 @@ if robot_battery_thread_running  == 0 and robot_battery_monitoring == 1:
         log.put("[except] FATAL: Issue starting thread for robot_battery_thread, exiting. E: "+repr(e))
         exit()
 # start up event thread
-if robot_event_thread_running  == 0 and robot_event_monitoring == 1:
+if robot_event_thread_running  == 0:
     try:
         robot_event_thread_running = 1
         Thread(name = "VT-event", target = robot_event_thread).start()
