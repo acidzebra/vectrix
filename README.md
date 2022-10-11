@@ -1,6 +1,6 @@
 # VecTrix
 a 24/7 Anki/DDL Vector robot monitor which can optionally keep Vector active and improve his idle behavior, has extensive logging options, battery profiling, and more!
-I have owned three Vector units (and a Cozmo) for years, and I love my little robot buddies. This program was previously known as VectorDiag but it surpassed that scope.
+I have owned three Vector units (and a Cozmo) for years, and I love my little robot buddies. Since they are aging and were showing some issues, I wanted some insight into their 'brains'. While at it, I thought I could also improve their idle behaviors. This program was previously known as VectorDiag but it has since surpassed that scope.
 
 This program was created to accomplish three things: 
 1. a visually attractive way to read out all sensors from the console using minimal resources and dependencies
