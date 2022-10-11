@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-vt_version = "0.9.6-beta.3"
+vt_version = "0.9.6"
 # --- START OF CONFIG AND INFO SECTION ---
 # --- In which we let you set preferences ---
 #
@@ -45,7 +45,7 @@ continuous_cycle_latest      = 17                       # won't start continuous
 # reanimator will activate if Vector is sitting still off-dock for more than [reanimator_timeout] seconds, and try to make Vector more entertaining
 reanimator                   = True                     # whether reanimator is enabled, default is True. If you want to disable specific animations, see anim_list
 reanimator_logging           = True                     # will log some details on what reanimator is doing, if you want more detail see the reanimator_debug flag elsewhere, default is True
-reanimator_combo_chance      = True                     # 10% chance of multiple reanimator actions if set to True (animate/drive/roll cube), default is True
+reanimator_combo_chance      = True                     # (NOT IMPLEMENTED) 10% chance of multiple reanimator actions if set to True (animate/drive/roll cube), default is True
 reanimator_beep              = True                     # when reanimator drives Vector up to a wall, Vector will back off slowly while going beep beep like Cozmo, set to True to disable, default is False
 reanimator_timeout           = 4.5                      # time in seconds Vector needs to be idle before engaging reanimator. Idle is defined as off-dock with OK battery and are_motors_moving and are_wheels_moving both set to False, default is 5
 reanimator_min_distance      = 100                      # minimum required free space in front of Vector before reanimator is free to go for a drive, default is 100
@@ -70,8 +70,8 @@ eye_hue_blue                 = 0.57                     # eye color used for "bu
 eye_hue_purple               = 0.85                     # eye color not currently used, default is 0.85
 flash_borders_on_max         = False                    # will turn borders of gyro/accel/wheel graphs red when readings hit max (0 or 100), default is False
 quit_on_error                = False                    # the default behavior of Vectrix is to try to endlessly reconnect on error/disconnect, set this to true if you want the program to exit instead, default is False
-show_viewer                  = False                    # if you're running this program on a GUI and have the viewer configured, you can enable it here, default is False
-show_3dviewer                = False                    # if you're running this program on a GUI and have the 3d viewer configured, you can enable it here, default is False
+show_viewer                  = False                    # (NOT TESTED/NOT WORKING) if you're running this program on a GUI and have the viewer configured, you can enable it here, default is False
+show_3dviewer                = False                    # (NOT TESTED/NOT WORKING) if you're running this program on a GUI and have the 3d viewer configured, you can enable it here, default is False
 # UI color customization:
 #0=black,1=red,2=green,3=yellow,4=blue,5=magenta,6=cyan,7=white
 ui_color_0                   = 0
@@ -321,7 +321,7 @@ recent_cliff                    = 0
 recent_cliff_timer              = 0
 recent_pickup                   = 0
 recent_pickup_timer             = 0
-recent_cube_tapped              = 0
+recent_cube_tapped              = 0 
 recent_cube_rotated             = 0
 recent_wake_word                = 0
 recent_cube_available           = 0
@@ -335,7 +335,7 @@ recent_face_seen_timer          = 0
 #dreamstuff
 dream_delay_counter             = 1
 dreamtoggle                    = 0
-dreamlist                       = ["electric sheep","the biggest charger ever","being stuck on the charger","rolling endless cubes","lifting the biggest cube ever","exploring the world","a giant cube","stacking cubes to the sky","lifting cubes all day","an endless supply of cubes","being stuck without tracks","being petted","flying","having all-terrain wheels","winning at blackjack","falling","having rocket boosters","playing on a desk full of Vectors","being lost in a maze","upgrades","being a giant robot","playing with you","having very low battery power","infinite battery power","being unable to find a cube","seeing different robots","a golden cube","having a little robot pet","playing with a cube","playing with a ball","going outside","a rounded cube?!?","playing with little brother Cozmo","having legs","being a giant mecha-robot","being able to jump","a self-rolling cube","being lost in a maze of cubes","a cake"]
+dreamlist                       = ["electric sheep","the biggest charger ever","being stuck on the charger","rolling endless cubes","lifting the biggest cube ever","exploring the world","a giant cube","stacking cubes to the sky","lifting cubes all day","an endless supply of cubes","being stuck without tracks","being petted","flying","having all-terrain wheels","winning at blackjack","falling","having rocket boosters","playing on a desk full of Vectors","being lost in a maze","upgrades","being a giant robot","playing with you","having very low battery power","infinite battery power","being unable to find a cube","seeing different robots","a golden cube","having a little robot pet","playing with a cube","playing with a ball","going outside","a rounded cube?!?","playing with little brother Cozmo","having legs","being a giant mecha-robot","being able to jump","a self-rolling cube","being lost in a maze of cubes","a cake","a rain of cubes","being petted","having a job as a cube inspector"]
 # reanimator list with anim_timer_beep_01 
 anim_list                       = ["anim_cube_psychic_01","anim_cube_success_getout_01","anim_cubeconnection_connectionfailure_01","anim_cubeconnection_connectionlost_01","anim_cubeconnection_connectionsuccess_01","anim_cubedocking_fail_01","anim_explorer_huh_close_01","anim_explorer_huh_far_01","anim_eyecontact_giggle_01","anim_eyecontact_giggle_01_head_angle_20","anim_eyecontact_giggle_01_head_angle_-20","anim_eyecontact_giggle_01_head_angle_40","anim_findcube_request_01","anim_fistbump_success_01","anim_fistbump_success_02","anim_fistbump_success_03","anim_freeplay_reacttoface_identified_01","anim_freeplay_reacttoface_identified_02","anim_freeplay_reacttoface_identified_03","anim_greeting_goodbye_01","anim_greeting_goodbye_02","anim_greeting_goodmorning_01","anim_greeting_goodmorning_02","anim_greeting_hello_01","anim_greeting_hello_02","anim_handdetection_reaction_01","anim_handdetection_reaction_02","anim_heldonpalm_edge_nervous_01","anim_heldonpalm_edge_relaxed_01","anim_heldonpalm_jolt_01","anim_heldonpalm_looking_nervous_01","anim_heldonpalm_nestling_01","anim_heldonpalm_pickup_nervous_01","anim_heldonpalm_pickup_relaxed_01","anim_heldonpalm_putdown_nervous_01","anim_heldonpalm_putdown_relaxed_01","anim_heldonpalm_relaxed_idle_01","anim_heldonpalm_transition2relaxed_01","anim_keepaway_backup_01","anim_keepaway_bored_idle_01","anim_keepaway_bored_idle_02","anim_keepaway_getin_focus_01","anim_keepaway_getout_engaged_01","anim_keepaway_getout_frustrated_01","anim_keepaway_getout_loseinterest_01","anim_keepaway_getout_satisfied_01","anim_keepaway_getreadyset_01","anim_keepaway_hit_reaction_01","anim_keepaway_idle_glance_01","anim_keepaway_idle_side_02","anim_keepaway_idleliftdown_01","anim_keepaway_idleliftdown_02","anim_keepaway_miss_reaction_01","anim_keepaway_pounce_mousetrap_04","anim_keepaway_pounce_quick_01","anim_keepaway_pounce_shake_02","anim_keepaway_pounce_slow_05","anim_onboarding_cube_psychic_01","anim_onboarding_cube_reacttocube","anim_onboarding_cube_success_getout_01","anim_onboarding_reacttoface_happy_01","anim_onboarding_reacttoface_happy_01_head_angle_20","anim_onboarding_reacttoface_happy_01_head_angle_-20","anim_onboarding_reacttoface_happy_01_head_angle_40","anim_petting_blissloop_01","anim_petting_blissloop_02","anim_petting_blissloop_03","anim_petting_lvl1_01","anim_petting_lvl2_01","anim_petting_lvl3_01","anim_petting_lvl4_01","anim_photo_focus_01","anim_photo_shutter_01","anim_pounce_01","anim_pounce_02","anim_pounce_03","anim_pounce_04","anim_pounce_fail_01","anim_pounce_fail_02","anim_pounce_fail_03","anim_pounce_fail_04","anim_pounce_long_01","anim_pounce_success_01","anim_pounce_success_02","anim_pounce_success_03","anim_pounce_success_04","anim_reacttoblock_dropfail_01","anim_reacttoblock_dropfail_02","anim_reacttoblock_dropsuccess_01","anim_reacttoblock_focusedeyes_01","anim_reacttoblock_frustrated_01","anim_reacttoblock_happydetermined_01","anim_reacttoblock_happydetermined_02","anim_reacttoblock_success_01","anim_reacttoface_unidentified_01_head_angle_20","anim_reacttoface_unidentified_01_head_angle_-20","anim_reacttoface_unidentified_01_head_angle_40","anim_reacttoface_unidentified_02_head_angle_20","anim_reacttoface_unidentified_02_head_angle_40","anim_reacttoface_unidentified_03_head_angle_20","anim_reacttoface_unidentified_03_head_angle_-20","anim_reacttohabitat_subtle_01","anim_referencing_curious_01","anim_referencing_curious_01_head_angle_20","anim_referencing_curious_01_head_angle_-20","anim_referencing_curious_01_head_angle_40","anim_referencing_giggle_01","anim_referencing_giggle_01_head_angle_20","anim_referencing_giggle_01_head_angle_-20","anim_referencing_giggle_01_head_angle_40","anim_referencing_smile_01","anim_referencing_smile_01_head_angle_20","anim_referencing_smile_01_head_angle_-20","anim_referencing_smile_01_head_angle_40","anim_referencing_squint_01","anim_referencing_squint_01_head_angle_20","anim_referencing_squint_01_head_angle_-20","anim_referencing_squint_01_head_angle_40","anim_referencing_squint_02","anim_referencing_squint_02_head_angle_20","anim_referencing_squint_02_head_angle_-20","anim_referencing_squint_02_head_angle_40","anim_sudden_obstacle_react_01","anim_sudden_obstacle_react_02","anim_timer_beep_01","anim_timer_emote_01","anim_triple_backup","anim_vc_alrighty_01","anim_vc_laser_lookdown_01","anim_vc_reaction_nofaceheardyou_01"]
 # define the UI
@@ -424,9 +424,10 @@ def logging_thread():
     global file_logging, robotlog, logtoggle
     global logging_thread_running
     data = ""
+    old_data = ""
     while True:
         try:
-            if not log.empty():
+            while not log.empty():
                 data = log.get_nowait()
                 timestamp = '{:%H:%M:%S}'.format(datetime.datetime.now())
                 try:
@@ -460,6 +461,7 @@ def logging_thread():
                         if debug_logging:
                             log.put("[system] unable to post to Discord for " + str(vector_name) + ", E: "+repr(e))
                 log.task_done()
+                old_data = data
                 data = ""
         except Exception as e:
             if debug_logging:
@@ -1452,7 +1454,7 @@ def robot_random_drive():
             bugoutchance = random.randint(1, 100) + bugout_chance_increase
             if bugoutchance > 70 and clear_sailing == 0:
                 if reanimator_debug or reanimator_logging:
-                    log.put("[ranmtr] " + str(vector_name) + " is going to a random position from his navmap (if possible)")
+                    log.put("[ranmtr] " + str(vector_name) + " is going to a random position from the internal navmap (if possible)")
                 robot_go_to_random_pose()
                 return
             else:
@@ -1965,6 +1967,7 @@ if camera_logging:
     except Exception as e:
         if debug_logging:
             log.put("[except] issue initializing the camera feed for " + str(vector_name) + ": "+repr(e))
+# connect to cube if configured
 if connect_to_cube:
     try:
         if not reduced_logging:
@@ -2282,7 +2285,7 @@ while True:
             if reanimator:
                 if robot_good_to_go:
                 #if not robot_cliffdetect and not robot_held and not robot_pickup and not robot_docked and reanimator_thread_running == 0:
-                    if stillswitch == 1 and (robot_moving or robot_driving) and reanimator_thread_running == 0 and not endless_reanimator:
+                    if stillswitch == 1 and (robot_moving or robot_driving) and reanimator_thread_running == 0:
                         stillswitch = 0
                         if vector_sit_still_total_time == 0:
                             pass
@@ -2291,27 +2294,28 @@ while True:
                                 msg = "[debugs] " + str(vector_name) + " has started moving again, inactivity for "+str("%.2f" % round(vector_sit_still_total_time,2))+" seconds"
                                 log.put(msg)
                             vector_sit_still_total_time = 0
-                    if (robot_moving or robot_driving) and not endless_reanimator:
+                    if (robot_moving or robot_driving):
                         vector_sit_still_total_time = 0
                         vector_is_idle = 0
-                    if reanimator_thread_running == 0 and startup == 0:
+                    if reanimator_thread_running == 0 and startup == 0 and not (robot_moving or robot_driving):
                         vector_sit_still_total_time = vector_sit_still_total_time + refresh_rate
-                    if stillswitch == 0 and vector_sit_still_total_time > reanimator_timeout and reanimator_thread_running == 0 and not endless_reanimator:
+                    if stillswitch == 0 and vector_sit_still_total_time > reanimator_timeout and reanimator_thread_running == 0:
                         if debug_logging and not reduced_logging:
                             log.put("[debugs] " + str(vector_name) + " has hit idle threshold at "+str(vector_sit_still_total_time)+ " seconds")
                         if reanimator_thread_running == 0 and vector_is_idle == 0:
                             vector_is_idle = 1
                             vector_sit_still_total_time = 0
                         stillswitch = 1
-                    if vector_sit_still_total_time > reanimator_timeout and reanimator_thread_running == 0 and not endless_reanimator:
+                    if vector_sit_still_total_time > reanimator_timeout and reanimator_thread_running == 0:
                         vector_is_idle = 1
                         vector_sit_still_total_time = 0
                 else:
                     vector_sit_still_total_time = 0
                     stillswitch = 0
                 if endless_reanimator:
+                    vector_sit_still_total_time = 0
                     vector_is_idle = 1
-                if threadrunning:
+                if threadrunning or robot_control_blocking:
                     vector_is_idle = 0
                 if vector_is_idle == 1 and reanimator_thread_running == 0 and robot_good_to_go:
                     try:
@@ -2697,7 +2701,7 @@ while True:
             if  recent_cube_available_timer > 180:
                 recent_cube_available_timer = 0
                 recent_cube_available = 0
-            if  recent_face_seen_timer > 30:
+            if  recent_face_seen_timer > 60:
                 recent_face_seen_timer = 0
                 recent_face_seen = 0
             if recent_carry == 1 and recent_carry_timer > 10 and not robot_carrying:
