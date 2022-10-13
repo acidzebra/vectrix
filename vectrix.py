@@ -1755,14 +1755,14 @@ def robot_go_to_random_pose():
     try:
         coinflip = random.randint(0, 1)
         if coinflip == 1:
-            xpose = random.randint(50, random_pose_maxrange)
+            xpose = random.randint((reanimator_max_distance/4), (reanimator_max_distance/2))
         else:
-            xpose = -(random.randint(50, random_pose_maxrange))
+            xpose = -(random.randint(5(reanimator_max_distance/4), (reanimator_max_distance/2))
         coinflip = random.randint(0, 1)
         if coinflip == 1:
-            ypose = random.randint(150, random_pose_maxrange)
+            ypose = random.randint((reanimator_max_distance/4), (reanimator_max_distance/2))
         else:
-            ypose = -(random.randint(150, random_pose_maxrange))
+            ypose = -(random.randint((reanimator_max_distance/4), (reanimator_max_distance/2))
         zangle = random.randint(-359, 359)
         pose = Pose(x=xpose, y=ypose, z=0, angle_z=Angle(degrees=zangle))
         if reanimator_debug:
