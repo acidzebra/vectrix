@@ -1757,7 +1757,7 @@ def robot_go_to_random_pose():
         if coinflip == 1:
             xpose = random.randint((reanimator_max_distance/4), (reanimator_max_distance/2))
         else:
-            xpose = -(random.randint(5(reanimator_max_distance/4), (reanimator_max_distance/2))
+            xpose = -(random.randint((reanimator_max_distance/4), (reanimator_max_distance/2))
         coinflip = random.randint(0, 1)
         if coinflip == 1:
             ypose = random.randint((reanimator_max_distance/4), (reanimator_max_distance/2))
