@@ -2,6 +2,12 @@ Changelog
 
 note: earlier versions of VecTrix (named VectorDiag) are available here: https://gist.github.com/acidzebra/74d7b288b267d7fcea8c33358d4c2e78
 
+0.9.7-beta.1
+- (minor) reworked some calculated values (extended rangefinder bar to 400mm)
+- (minor) fixes for faces+recency, dreaming routines
+- (minor) MQTT logging (advanced users, not documented, if you know what MQTT is and use it, it's available for voltage/dock state and extensible. If you don't it's an irrelevant feature)
+- (minor) cleanup, fixes, and cosmetics
+
 0.9.6
 - (minor) cleanup/formatting of log messages, extra formatting for Discord
 - (minor) added passive_monitoring_only and reduced_logging switches, the first disables all file/discord logging, reanimator, and continuous cycles (no matter what options set), the second modifies other logging options set to only include more significant messages

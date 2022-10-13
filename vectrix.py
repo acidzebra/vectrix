@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-vt_version = "0.9.6"
+vt_version = "0.9.7-beta.1"
 # --- START OF CONFIG AND INFO SECTION ---
 # --- In which we let you set preferences ---
 #
 # ROBOT SERIAL NUMBER, YOU NEED TO EDIT THIS AND REPLACE WITH YOUR ROBOT'S SERIAL NUMBER
-robot_serial = "00902b5d"
+robot_serial = "00301a24"
 #
 # MANY SWITCHES, DEFAULTS ARE FINE, CHANGE AS DESIRED
 vector_name                  = "Vector"                 # vector_name will be used in most log entries for a more personalized log
@@ -22,8 +22,8 @@ sensors_logging              = True                     # logs various sensors f
 actions_logging              = True                     # logs various actions carried out, default is True
 face_logging                 = True                     # logs face detection, can be a bit spammy, default is False
 cube_logging                 = True                     # logs specific cube events (tapping, rotating) but only when cube is connected, default is False
-cube_powersaver              = False                    # if enabled, will disconnect the cube when it becomes available (experimental and possibly useless), default is False
-connect_to_cube              = False                    # will try to connect to an available cube
+cube_powersaver              = True                     # if enabled, will disconnect the cube when it becomes available (experimental and possibly useless), default is True
+connect_to_cube              = False                    # will try to connect to an available cube on startup, incompatible with cube_powersaver, default is False
 object_logging               = False                    # logs object appearances, spammy, default is False
 object_logging_while_low_bat = False                    # temporarily turns on object logging while looking for the charger, spammy while active, default is False
 misc_logging                 = False                    # logs some navmap and other stuff, less interesting than it sounds tbh, spammy, default is False
@@ -40,6 +40,7 @@ accelgyro_logging_interval   = 1                        #  how often accel/gyro 
 continuous_cycle             = True                     # if enabled will attempt to send Vector off charger as soon as battery is charged by requesting control and issuing a command, this is pretty flaky, use at own risk, default is False. 
 continuous_cycle_scheduling  = False                    # whether continuous cycle should only run between certain hours, default is False (=run at all hours)
 continuous_cycle_wait_time   = 120                      # how long to wait after battery is full in seconds before attempting to force Vector off the dock, default is 120
+continuous_cycle_random      = 180                      # random offset (random number between 1 and the value of this variable) in seconds that gets added to continuous_cycle_wait_time, default is 180
 continuous_cycle_earliest    = 9                        # won't start continuous cycle if the time is before... notation in 24h time, 9am by default
 continuous_cycle_latest      = 17                       # won't start continuous cycle if the time is after...  notation in 24h time, 5pm by default
 # reanimator will activate if Vector is sitting still off-dock for more than [reanimator_timeout] seconds, and try to make Vector more entertaining
@@ -86,14 +87,19 @@ ui_color_7                   = 7
 # # reds and blues # ui_color_0 = 0 # ui_color_1 = 5 # ui_color_2 = 1 # ui_color_3 = 4 # ui_color_4 = 4 # ui_color_5 = 4 # ui_color_6 = 1 # ui_color_7 = 5
 # # mono # ui_color_0 = 0 # ui_color_1 = 7 # ui_color_2 = 7 # ui_color_3 = 7 # ui_color_4 = 7 # ui_color_5 = 7 # ui_color_6 = 7 # ui_color_7 = 7
 #
+# MQTT is used for machine to machine messaging, in this case Vector's battery status. Needs paho-mqtt (pip install paho-mqtt) and a configured MQTT broker, see the code for the format used
+MQTT_logging                 = False                     # MQTT is used to log Vector's battery data to an MQTT server, default is False
+MQTT_HOST                    = "192.168.0.175"          # hostname/IP of the MQTT server, default is my local server :)
+MQTT_PORT                    = 1883                     # port of the MQTT server, default is 1883
+MQTT_KEEPALIVE_INTERVAL      = 20                       # MQTT keepalive, default is 20
+MQTT_TOPIC                   = "VectorStatus"           # MQTT topic to post to, default is "VectorStatus"
+MQTT_MSG_INTERVAL            = 5                        # interval in seconds to post to MQTT, dewfault is 5
+MQTT_DEBUG                   = False                    # debug logging for MQTT, default is False
 # debug switches
-reanimator_debug                = False                 # spammy but will tell you exactly what reanimator is doing
-endless_reanimator              = False                 # will endlessly run reanimator, overriding Vector's normal behaviors until the battery goes low
-debug_logging                   = False                 # logs extended debug messages about robot activity, program activity, etc, default is False
-debug_logging_interval          = 0                     # how often we log a summary of debug status in seconds, default is whatever it says currently. Set to 0 to disable intermittent recap (but keep all the rest of the debug msgs)
-robot_status_monitoring         = 1                     # start status thread or not (disabling will impair this program because we won't get crucial robot status data)
-robot_battery_monitoring        = 1                     # start battery thread or not (disabling will impair this program because we won't get dock/lowpower data)
-robot_event_monitoring          = 1                     # start event monitoring thread or not (most of the program will probably still work if disabled)
+reanimator_debug             = False                    # spammy but will tell you exactly what reanimator is doing
+endless_reanimator           = False                    # will endlessly run reanimator, overriding Vector's normal behaviors until the battery goes low
+debug_logging                = False                    # logs extended debug messages about robot activity, program activity, etc, default is False
+debug_logging_interval       = 0                        # how often we log a summary of debug status in seconds, default is whatever it says currently. Set to 0 to disable intermittent recap (but keep all the rest of the debug msgs)
 # --- END OF CONFIG AND INFO SECTION ---
 # --- START OF LIBRARY IMPORT SECTION ---
 # --- In which we import needed libraries and inform you if they're missing ---
@@ -128,10 +134,18 @@ except:
 try:
     from dashing import *
 except:
-    print("!!! You have not installed dashing! Install it using \"pip3 install dashing\" and then try again !!!")
+    print("!!! You have not installed dashing! Install it using \"pip install dashing\" and then try again !!!")
     print("!!! If it is installed and configured, make sure you are launching from an environment that knows where these libraries are")
     print("!!! Ex: if you're using Windows, try using a command prompt with 'python vectrix.py' !!!")
     exit()
+if MQTT_logging:
+    try:
+        import paho.mqtt.client as mqtt
+    except:
+        print("!!! You have enabled MQTT but not installed the client. \"pip install paho-mqtt\" and then try again !!!")
+        print("!!! If it is installed and configured, make sure you are launching from an environment that knows where these libraries are")
+        print("!!! Ex: if you're using Windows, try using a command prompt with 'python vectrix.py' !!!")
+        exit()
 # --- END OF LIBRARY IMPORT SECTION ---
 # --- START OF VARIABLES SECTION ---
 # --- In which we define the robot, ui, and various states for later use ---
@@ -167,6 +181,8 @@ robot_voltage                   = 0
 robot_batlevel                  = 0
 calmpower                       = 0
 stuck_warning                   = 0
+highest_pct_value               = 0
+lowest_pct_value                = 0
 robot_good_to_go                = False
 robot_charging                  = False
 robot_docked                    = False
@@ -246,6 +262,7 @@ tickcounter                     = 0
 battcounter                     = 0
 batlogcounter                   = 0
 csvcounter                      = 0
+mqttcounter                     = 0  
 # data from event robot_state
 robot_pose_angle_rad	        = 0
 robot_pose_pitch_rad	        = 0
@@ -330,14 +347,21 @@ recent_cube_rotated_timer       = 0
 recent_wake_word_timer          = 0
 recent_cube_available_timer     = 0
 recent_face_seen                = 0
+recent_known_face_seen          = 0
 recent_face_seen_timer          = 0
-    # quit_on_error_request request
+recent_known_face_seen_timer    = 0
+recent_cube_tapped              = 0
+recent_cube_rotated             = 0
+recent_wake_word                = 0
+recent_cube_available           = 0
+recent_face_seen                = 0
 #dreamstuff
 dream_delay_counter             = 1
-dreamtoggle                    = 0
-dreamlist                       = ["electric sheep","the biggest charger ever","being stuck on the charger","rolling endless cubes","lifting the biggest cube ever","exploring the world","a giant cube","stacking cubes to the sky","lifting cubes all day","an endless supply of cubes","being stuck without tracks","being petted","flying","having all-terrain wheels","winning at blackjack","falling","having rocket boosters","playing on a desk full of Vectors","being lost in a maze","upgrades","being a giant robot","playing with you","having very low battery power","infinite battery power","being unable to find a cube","seeing different robots","a golden cube","having a little robot pet","playing with a cube","playing with a ball","going outside","a rounded cube?!?","playing with little brother Cozmo","having legs","being a giant mecha-robot","being able to jump","a self-rolling cube","being lost in a maze of cubes","a cake","a rain of cubes","being petted","having a job as a cube inspector"]
+dreamtoggle                     = 0
+dreamchance                     = 20   # percentage change 1-100)
+dreamlist                       = ["electric sheep","the biggest charger ever","being stuck on the charger","rolling endless cubes","lifting the biggest cube ever","exploring the world","a giant cube","stacking cubes to the sky","lifting cubes all day","an endless supply of cubes","being stuck without tracks","being petted","flying","having all-terrain wheels","winning at blackjack","falling","having rocket boosters","playing on a desk full of Vectors","being lost in a maze","upgrades","playing with you","having very low battery power","infinite battery power","being unable to find a cube","seeing different robots","a golden cube","having a little robot pet","playing with a cube","playing with a ball","going outside","a rounded cube?!?","playing with little brother Cozmo","having legs","being a giant robot","being able to jump","a self-rolling cube","being lost in a maze of cubes","a cake","a rain of cubes","being petted","having a job as a cube inspector","having a conversation with the cube","a cube too heavy to lift","competing in the robolympics"]
 # reanimator list with anim_timer_beep_01 
-anim_list                       = ["anim_cube_psychic_01","anim_cube_success_getout_01","anim_cubeconnection_connectionfailure_01","anim_cubeconnection_connectionlost_01","anim_cubeconnection_connectionsuccess_01","anim_cubedocking_fail_01","anim_explorer_huh_close_01","anim_explorer_huh_far_01","anim_eyecontact_giggle_01","anim_eyecontact_giggle_01_head_angle_20","anim_eyecontact_giggle_01_head_angle_-20","anim_eyecontact_giggle_01_head_angle_40","anim_findcube_request_01","anim_fistbump_success_01","anim_fistbump_success_02","anim_fistbump_success_03","anim_freeplay_reacttoface_identified_01","anim_freeplay_reacttoface_identified_02","anim_freeplay_reacttoface_identified_03","anim_greeting_goodbye_01","anim_greeting_goodbye_02","anim_greeting_goodmorning_01","anim_greeting_goodmorning_02","anim_greeting_hello_01","anim_greeting_hello_02","anim_handdetection_reaction_01","anim_handdetection_reaction_02","anim_heldonpalm_edge_nervous_01","anim_heldonpalm_edge_relaxed_01","anim_heldonpalm_jolt_01","anim_heldonpalm_looking_nervous_01","anim_heldonpalm_nestling_01","anim_heldonpalm_pickup_nervous_01","anim_heldonpalm_pickup_relaxed_01","anim_heldonpalm_putdown_nervous_01","anim_heldonpalm_putdown_relaxed_01","anim_heldonpalm_relaxed_idle_01","anim_heldonpalm_transition2relaxed_01","anim_keepaway_backup_01","anim_keepaway_bored_idle_01","anim_keepaway_bored_idle_02","anim_keepaway_getin_focus_01","anim_keepaway_getout_engaged_01","anim_keepaway_getout_frustrated_01","anim_keepaway_getout_loseinterest_01","anim_keepaway_getout_satisfied_01","anim_keepaway_getreadyset_01","anim_keepaway_hit_reaction_01","anim_keepaway_idle_glance_01","anim_keepaway_idle_side_02","anim_keepaway_idleliftdown_01","anim_keepaway_idleliftdown_02","anim_keepaway_miss_reaction_01","anim_keepaway_pounce_mousetrap_04","anim_keepaway_pounce_quick_01","anim_keepaway_pounce_shake_02","anim_keepaway_pounce_slow_05","anim_onboarding_cube_psychic_01","anim_onboarding_cube_reacttocube","anim_onboarding_cube_success_getout_01","anim_onboarding_reacttoface_happy_01","anim_onboarding_reacttoface_happy_01_head_angle_20","anim_onboarding_reacttoface_happy_01_head_angle_-20","anim_onboarding_reacttoface_happy_01_head_angle_40","anim_petting_blissloop_01","anim_petting_blissloop_02","anim_petting_blissloop_03","anim_petting_lvl1_01","anim_petting_lvl2_01","anim_petting_lvl3_01","anim_petting_lvl4_01","anim_photo_focus_01","anim_photo_shutter_01","anim_pounce_01","anim_pounce_02","anim_pounce_03","anim_pounce_04","anim_pounce_fail_01","anim_pounce_fail_02","anim_pounce_fail_03","anim_pounce_fail_04","anim_pounce_long_01","anim_pounce_success_01","anim_pounce_success_02","anim_pounce_success_03","anim_pounce_success_04","anim_reacttoblock_dropfail_01","anim_reacttoblock_dropfail_02","anim_reacttoblock_dropsuccess_01","anim_reacttoblock_focusedeyes_01","anim_reacttoblock_frustrated_01","anim_reacttoblock_happydetermined_01","anim_reacttoblock_happydetermined_02","anim_reacttoblock_success_01","anim_reacttoface_unidentified_01_head_angle_20","anim_reacttoface_unidentified_01_head_angle_-20","anim_reacttoface_unidentified_01_head_angle_40","anim_reacttoface_unidentified_02_head_angle_20","anim_reacttoface_unidentified_02_head_angle_40","anim_reacttoface_unidentified_03_head_angle_20","anim_reacttoface_unidentified_03_head_angle_-20","anim_reacttohabitat_subtle_01","anim_referencing_curious_01","anim_referencing_curious_01_head_angle_20","anim_referencing_curious_01_head_angle_-20","anim_referencing_curious_01_head_angle_40","anim_referencing_giggle_01","anim_referencing_giggle_01_head_angle_20","anim_referencing_giggle_01_head_angle_-20","anim_referencing_giggle_01_head_angle_40","anim_referencing_smile_01","anim_referencing_smile_01_head_angle_20","anim_referencing_smile_01_head_angle_-20","anim_referencing_smile_01_head_angle_40","anim_referencing_squint_01","anim_referencing_squint_01_head_angle_20","anim_referencing_squint_01_head_angle_-20","anim_referencing_squint_01_head_angle_40","anim_referencing_squint_02","anim_referencing_squint_02_head_angle_20","anim_referencing_squint_02_head_angle_-20","anim_referencing_squint_02_head_angle_40","anim_sudden_obstacle_react_01","anim_sudden_obstacle_react_02","anim_timer_beep_01","anim_timer_emote_01","anim_triple_backup","anim_vc_alrighty_01","anim_vc_laser_lookdown_01","anim_vc_reaction_nofaceheardyou_01"]
+anim_list                       = ["anim_cube_psychic_01","anim_cube_success_getout_01","anim_cubeconnection_connectionfailure_01","anim_cubeconnection_connectionlost_01","anim_cubeconnection_connectionsuccess_01","anim_cubedocking_fail_01","anim_explorer_huh_close_01","anim_explorer_huh_far_01","anim_eyecontact_giggle_01","anim_eyecontact_giggle_01_head_angle_20","anim_eyecontact_giggle_01_head_angle_-20","anim_eyecontact_giggle_01_head_angle_40","anim_findcube_request_01","anim_fistbump_success_01","anim_fistbump_success_02","anim_fistbump_success_03","anim_freeplay_reacttoface_identified_01","anim_freeplay_reacttoface_identified_02","anim_freeplay_reacttoface_identified_03","anim_greeting_goodbye_01","anim_greeting_goodbye_02","anim_greeting_goodmorning_01","anim_greeting_goodmorning_02","anim_greeting_hello_01","anim_greeting_hello_02","anim_handdetection_reaction_01","anim_handdetection_reaction_02","anim_heldonpalm_edge_nervous_01","anim_heldonpalm_edge_relaxed_01","anim_heldonpalm_jolt_01","anim_heldonpalm_looking_nervous_01","anim_heldonpalm_nestling_01","anim_heldonpalm_pickup_nervous_01","anim_heldonpalm_pickup_relaxed_01","anim_heldonpalm_putdown_nervous_01","anim_heldonpalm_putdown_relaxed_01","anim_heldonpalm_relaxed_idle_01","anim_heldonpalm_transition2relaxed_01","anim_keepaway_backup_01","anim_keepaway_bored_idle_01","anim_keepaway_bored_idle_02","anim_keepaway_getin_focus_01","anim_keepaway_getout_engaged_01","anim_keepaway_getout_frustrated_01","anim_keepaway_getout_loseinterest_01","anim_keepaway_getout_satisfied_01","anim_keepaway_getreadyset_01","anim_keepaway_hit_reaction_01","anim_keepaway_idle_glance_01","anim_keepaway_idle_side_02","anim_keepaway_idleliftdown_01","anim_keepaway_idleliftdown_02","anim_keepaway_miss_reaction_01","anim_keepaway_pounce_mousetrap_04","anim_keepaway_pounce_quick_01","anim_keepaway_pounce_shake_02","anim_keepaway_pounce_slow_05","anim_onboarding_cube_psychic_01","anim_onboarding_cube_reacttocube","anim_onboarding_cube_success_getout_01","anim_onboarding_reacttoface_happy_01","anim_onboarding_reacttoface_happy_01_head_angle_20","anim_onboarding_reacttoface_happy_01_head_angle_-20","anim_onboarding_reacttoface_happy_01_head_angle_40","anim_petting_blissloop_01","anim_petting_blissloop_02","anim_petting_blissloop_03","anim_petting_lvl1_01","anim_petting_lvl2_01","anim_petting_lvl3_01","anim_petting_lvl4_01","anim_photo_focus_01","anim_photo_shutter_01","anim_pounce_01","anim_pounce_02","anim_pounce_03","anim_pounce_04","anim_pounce_fail_01","anim_pounce_fail_02","anim_pounce_fail_03","anim_pounce_fail_04","anim_pounce_long_01","anim_pounce_success_01","anim_pounce_success_02","anim_pounce_success_03","anim_pounce_success_04","anim_reacttoblock_dropfail_01","anim_reacttoblock_dropfail_02","anim_reacttoblock_dropsuccess_01","anim_reacttoblock_focusedeyes_01","anim_reacttoblock_frustrated_01","anim_reacttoblock_happydetermined_01","anim_reacttoblock_happydetermined_02","anim_reacttoblock_success_01","anim_reacttoface_unidentified_01_head_angle_20","anim_reacttoface_unidentified_01_head_angle_-20","anim_reacttoface_unidentified_01_head_angle_40","anim_reacttoface_unidentified_02_head_angle_20","anim_reacttoface_unidentified_02_head_angle_40","anim_reacttoface_unidentified_03_head_angle_20","anim_reacttoface_unidentified_03_head_angle_-20","anim_reacttohabitat_subtle_01","anim_referencing_curious_01","anim_referencing_curious_01_head_angle_20","anim_referencing_curious_01_head_angle_-20","anim_referencing_curious_01_head_angle_40","anim_referencing_giggle_01","anim_referencing_giggle_01_head_angle_20","anim_referencing_giggle_01_head_angle_-20","anim_referencing_giggle_01_head_angle_40","anim_referencing_smile_01","anim_referencing_smile_01_head_angle_20","anim_referencing_smile_01_head_angle_-20","anim_referencing_smile_01_head_angle_40","anim_referencing_squint_01","anim_referencing_squint_01_head_angle_20","anim_referencing_squint_01_head_angle_-20","anim_referencing_squint_01_head_angle_40","anim_referencing_squint_02","anim_referencing_squint_02_head_angle_20","anim_referencing_squint_02_head_angle_-20","anim_referencing_squint_02_head_angle_40","anim_sudden_obstacle_react_01","anim_sudden_obstacle_react_02","anim_timer_beep_01","anim_timer_emote_01","anim_triple_backup","anim_vc_alrighty_01","anim_vc_laser_lookdown_01"]
 # define the UI
 ui = VSplit(
         VSplit(
@@ -634,7 +658,7 @@ def robot_connection_thread():
         if header_logging:
             # populate the log with initial data
             if not reduced_logging:
-                log.put("[system] ---------------------------------------------------------------------------------------------------------------------------------------------------------") 
+                log.put("[system] ----------------------------------------------------------------------------------------------------------------------------------------------------------------------") 
             log.put("[system] VecTrix " + str(vt_version) + " started, gathering data at refresh rate " + str(refresh_rate) + ", press CTRL+C to exit")
             log.put("[system] Connected to " + str(conn_object.name) + " with serial number " + str(robot_serial)+" running OS "+str(version_state.os_version)+ " at IP "+str(conn_object.host)+", using certificate "+str(conn_object.cert_file))
             if not reduced_logging and startup == 1:
@@ -653,7 +677,7 @@ def robot_connection_thread():
             if headless and not reduced_logging and startup == 1:
                 log.put("[system] VecTrix is running headless")
             if not reduced_logging:
-                log.put("[system] ---------------------------------------------------------------------------------------------------------------------------------------------------------") 
+                log.put("[system] ----------------------------------------------------------------------------------------------------------------------------------------------------------------------") 
             if str(version_state.os_version) == "2.0.1.6076" and startup == 1:
                 log.put("[system] NOTICE: OS 2.0.1.6076 HAS A BUG THAT BREAKS GETTING VOLTAGE DATA FROM ROBOT, VOLTAGE BAR WILL BE INACCURATE/NONFUNCTIONAL")
     init_complete = 1
@@ -850,7 +874,8 @@ def robot_sensor_thread():
                     robot_is_lift_in_fov    = robot_proximity.last_sensor_reading.is_lift_in_fov
                     robot_found_object      = robot_proximity.last_sensor_reading.found_object
                     robot_unobstructed      = robot_proximity.last_sensor_reading.unobstructed
-                    robot_distance_mm       = rangefinder_distance.distance_mm
+                    if not robot_is_lift_in_fov:
+                        robot_distance_mm       = rangefinder_distance.distance_mm
             except anki_vector.exceptions.VectorNotFoundException as e:
                 if debug_logging:
                     log.put("[except] robot_sensor_thread: " + str(vector_name) + " not found exception. Error: " + repr(e))
@@ -888,13 +913,7 @@ def robot_event_thread():
     global robot_event_thread_running, robot_events_ready
     global robot_connected, robot_connection_error
     global last_event_received
-    global recent_cube_tapped, recent_cube_rotated, recent_wake_word, recent_cube_available, recent_face_seen
     robot_events_ready = 0
-    recent_cube_tapped = 0
-    recent_cube_rotated = 0
-    recent_wake_word = 0
-    recent_cube_available = 0
-    recent_face_seen = 0
     while init_complete < 1:
         sleep(refresh_rate)
     if debug_logging:
@@ -925,26 +944,26 @@ def robot_event_thread():
             if debug_logging:
                 log.put("[except] robot_event_thread on_robot_state issue: " +repr(e))
     def on_robot_observed_face(myrobot, event_type, event, evt):
-        global recent_face_seen
-        if recent_face_seen == 0:
+        global recent_face_seen, recent_known_face_seen
+        if recent_face_seen == 0 and event.face_id < 1:
             recent_face_seen = 1
-            if event.face_id < 1:
-                if not reduced_logging:
-                    log.put("[facedt] " + str(vector_name) + " sees an unknown face")
+            if not reduced_logging:
+                log.put("[facedt] " + str(vector_name) + " sees a face but isn't sure who it is")
+        if recent_known_face_seen == 0 and event.face_id >= 1:
+            recent_known_face_seen = 1
+            try:
+                for face in myrobot.world.visible_faces:
+                    face_name = face.name
+            except:
+                pass
+            if face_name:
+                msg="[events] " + str(vector_name) + " sees a face, it's " + str(face_name) + "!"
+                log.put(msg)
+                face_name = ""
             else:
-                try:
-                    for face in myrobot.world.visible_faces:
-                        face_name = face.name
-                except:
-                    pass
-                if face_name:
-                    msg="[events] " + str(vector_name) + " sees a face with ID:" + str(event.face_id) + ", it's " + str(face_name) + "!"
+                if not reduced_logging:
+                    msg="[events] " + str(vector_name) + " sees a face but can't recall the name"
                     log.put(msg)
-                    face_name = ""
-                else:
-                    if not reduced_logging:
-                        msg="[events] " + str(vector_name) + " sees a face with ID:" + str(event.face_id)
-                        log.put(msg)
     def on_robot_object_appeared(myrobot, event_type, event, evt):
         msg="[events] " + str(vector_name) + " senses an object appeared: " + str(event.obj)
         log.put(msg)
@@ -985,7 +1004,8 @@ def robot_event_thread():
     def on_robot_object_available(myrobot, event_type, event, evt):
         global recent_cube_available
         if recent_cube_available == 0:
-            log.put("[events] " + str(vector_name) + " senses a cube is available")
+            if not reduced_logging:
+                log.put("[events] " + str(vector_name) + " senses a cube")
             recent_cube_available = 1
         if cube_powersaver:
             if debug_logging:
@@ -996,7 +1016,8 @@ def robot_event_thread():
     def on_robot_object_tapped(myrobot, event_type, event, evt):
         global recent_cube_tapped
         if recent_cube_tapped == 0:
-            log.put("[events] " + str(vector_name) + " senses a cube was tapped")
+            if not reduced_logging:
+                log.put("[events] " + str(vector_name) + " senses a cube was tapped")
             recent_cube_tapped = 1
         if cube_powersaver:
             if debug_logging:
@@ -1128,7 +1149,7 @@ def yeetbot():
                 threadrunning = 0
                 robot_control_blocking = 0
                 return
-            waitcounter = waitcounter + refresh_rate
+            waitcounter += refresh_rate
             sleep(refresh_rate)
         if robot_docked and robot_batlevel == 3 and program_exit_requested == 0 and robot_control_blocking == 0 and robot_connected == 1:
             robot_control_blocking = 1
@@ -1147,9 +1168,8 @@ def yeetbot():
                 incontrol = 1
             # this used to use drive_off_charger but that function is pretty unreliable, trying with low-level commands
             #drive_off_anim_future = myrobot.anim.play_animation("anim_referencing_smile_01", ignore_body_track=True, ignore_head_track=False, ignore_lift_track=True)
-            sleep(0.5)
             release_motors_future = myrobot.motors.set_wheel_motors(0, 0)
-            sleep(1.4)
+            sleep(0.4)
             release_motors_future.cancel()
             forward_motors_future = myrobot.motors.set_wheel_motors(25, 25)
             sleep(4.5)
@@ -1158,16 +1178,14 @@ def yeetbot():
             sleep(0.3)
             stop_motors_future.cancel()
             if not robot_docked:
-                if dock_events_logging:
-                    log.put("[cycles] go explore, " + str(vector_name) + "!")
                 # force_off_dock_failure = 0
                 if rainbow_eyes and not robot_current_control_level == None:
                     eyecolor_future = myrobot.behavior.set_eye_color(eye_hue_green,1)
             else:
                 if rainbow_eyes and not robot_current_control_level == None:
                     eyecolor_future = myrobot.behavior.set_eye_color(eye_hue_red,1)
-                if dock_events_logging and not reduced_logging:
-                    msg="[cycles] " + str(vector_name) + " didn't feel like leaving the charger, will retry in " + str(continuous_cycle_wait_time) + " seconds"
+                if dock_events_logging and not reduced_logging:  
+                    msg="[cycles] " + str(vector_name) + " didn't feel like leaving the charger, will retry a little later"
                     log.put(msg)
                 # force_off_dock_failure = 1
             #drive_off_anim_future.cancel()
@@ -1311,7 +1329,10 @@ def robot_mix_animations():
         if reanimator_debug:
             log.put("[ranmtr] " + str(vector_name) + " will combine "+_ANIMATION1+" B:"+str(body_track_1)+",H:"+str(head_track_1)+",L:"+str(lift_track_1)+" and "+_ANIMATION2+" B:"+str(body_track_2)+",H:"+str(head_track_2)+",L:"+str(lift_track_2))
         if reanimator_logging:
-            log.put("[ranmtr] " + str(vector_name) + " is combining "+_ANIMATION1+" and "+_ANIMATION2)
+            if reduced_logging:
+                log.put("[ranmtr] " + str(vector_name) + " is mixing up animations!")
+            else:
+                log.put("[ranmtr] " + str(vector_name) + " is combining animations: "+_ANIMATION1+" and "+_ANIMATION2)
         # play the animations
         play_anim1_future = myrobot.anim.play_animation(_ANIMATION1, ignore_body_track=body_track_1, ignore_head_track=head_track_1, ignore_lift_track=lift_track_1)
         play_anim2_future = myrobot.anim.play_animation(_ANIMATION2, ignore_body_track=body_track_2, ignore_head_track=head_track_2, ignore_lift_track=lift_track_2)
@@ -1454,7 +1475,7 @@ def robot_random_drive():
             bugoutchance = random.randint(1, 100) + bugout_chance_increase
             if bugoutchance > 70 and clear_sailing == 0:
                 if reanimator_debug or reanimator_logging:
-                    log.put("[ranmtr] " + str(vector_name) + " is going to a random position from the internal navmap (if possible)")
+                    log.put("[ranmtr] " + str(vector_name) + " is thinking about going to a location nearby")
                 robot_go_to_random_pose()
                 return
             else:
@@ -1562,9 +1583,9 @@ def robot_random_drive():
                                 break
                             timeout = timeout + (refresh_rate/2)
                             sleep(refresh_rate/2)
+                        eyecolor_future.cancel()
                         backup_future.cancel()
                         lift_future.cancel()
-                        eyecolor_future.cancel()
                         if saytext == 1 and reanimator_beep:
                             say_future.cancel()
                             saytext = 0
@@ -1575,11 +1596,13 @@ def robot_random_drive():
                             request = robot_control_request(1,False)
                             if not request:
                                 return         
+                        eyecolor_future = myrobot.behavior.set_eye_color(eye_hue_blue,1)
                         release_motors_future = myrobot.motors.set_wheel_motors(0, 0)
                         release_lift_future = myrobot.motors.set_lift_motor(0)
                         sleep(0.2)
                         release_motors_future.cancel()
                         release_lift_future.cancel()
+                        eyecolor_future.cancel()
                         # having a laugh, mate?
                         gigglechance = random.randint(1, 100)
                         if gigglechance > 45:
@@ -1732,14 +1755,14 @@ def robot_go_to_random_pose():
     try:
         coinflip = random.randint(0, 1)
         if coinflip == 1:
-            xpose = random.randint(50, 600)
+            xpose = random.randint(50, random_pose_maxrange)
         else:
-            xpose = -(random.randint(50, 600))
+            xpose = -(random.randint(50, random_pose_maxrange))
         coinflip = random.randint(0, 1)
         if coinflip == 1:
-            ypose = random.randint(150, 600)
+            ypose = random.randint(150, random_pose_maxrange)
         else:
-            ypose = -(random.randint(150, 600))
+            ypose = -(random.randint(150, random_pose_maxrange))
         zangle = random.randint(-359, 359)
         pose = Pose(x=xpose, y=ypose, z=0, angle_z=Angle(degrees=zangle))
         if reanimator_debug:
@@ -1824,6 +1847,10 @@ def bool_to_value(inputbool):
     except Exception as e:
         if debug_logging:
             log.put("[system] bool_to_value: that was not a boolean. E: "+repr(e))
+# MQTT publish debug function
+def on_publish(client, userdata, mid):
+    if MQTT_DEBUG:
+        log.put("[system] MQTT message published")
 # robot_control_request is responsible for gaining control over the connected robot and releasing it.
 def robot_control_request(control_or_release, force_control):
     global myrobot, control_response
@@ -2037,6 +2064,10 @@ if battery_csv_logging:
         timestamp = '{:%H:%M:%S}'.format(datetime.datetime.now())
         msg = "[except] issue logging to CSV file " + str(csvlog) + "- E: "+repr(e)
         log.put(msg) 
+# MQTT
+if MQTT_logging:
+    mqttc = mqtt.Client()
+    mqttc.on_publish = on_publish      
 # --- END OF LAUNCH PREP SECTION ---
 # --- START OF MAIN LOOP ---
 # -- in which we toil endlessly until told otherwise ---
@@ -2188,7 +2219,7 @@ while True:
                 myrobot_liftheight.append(lifta)
         # UI: RANGEFINDER
                 if not robot_is_lift_in_fov:
-                    displaydistance = normalize_value(int((3.3-((robot_distance_mm/6600)*100))*35))    
+                    displaydistance = normalize_value(int((400-robot_distance_mm)/3.4))   
                     myrobot_distance.value = displaydistance
         # UI: WHEEL SPEED
                 lwheelspeed = normalize_value(int((robot_left_wheel_speed_mmps/2.2)+50))
@@ -2249,14 +2280,14 @@ while True:
                 if (cctime > datetime.time(continuous_cycle_earliest) and cctime < datetime.time(continuous_cycle_latest)):
                     if ccannounce == 0:
                         if dock_events_logging:
-                            log.put("[cycles] continuous_cycle: current time "+str(timestamp)+", in schedule. Schedule will end at "+str(continuous_cycle_latest)+":00")
+                            log.put("[cycles] continuous cycle is active, will end at "+str(continuous_cycle_latest)+":00")
                         ccannounce = 1
                     continuous_cycle = True
                     cctoggle = 0
                 else:
                     if ccannounce == 1:
                         if dock_events_logging:
-                            log.put("[cycles] continuous_cycle: current time "+str(timestamp)+", out of schedule. Schedule will start at "+str(continuous_cycle_earliest)+":00")
+                            log.put("[cycles] continuous cycle is not active, will start at "+str(continuous_cycle_earliest)+":00")
                         ccannounce = 0
                     continuous_cycle = False
                     cctoggle = 1
@@ -2348,10 +2379,11 @@ while True:
                         msg = "[except] issue logging to CSV file " + str(logfile) + "- E: "+repr(e)
                         log.put(timestamp + " " + msg)    
                 else:
-                    csvcounter = csvcounter + refresh_rate
+                    csvcounter += refresh_rate
+            # log charger state after startup and initial filling of the truth table
             if startup == 0:
                 if not robot_docked:
-                    dreamtoggle = 0
+                    # left dock with full charge
                     # left dock with full charge
                     if fullcharge == 1 and docked == 1 and charging == 0:
                         discharge_start_time = '{:%H:%M:%S}'.format(datetime.datetime.now())
@@ -2406,7 +2438,7 @@ while True:
                         charge_stop_time = '{:%H:%M:%S}'.format(datetime.datetime.now())
                         if dock_events_logging and not reduced_logging:
                             log.put("[chargr] " + str(vector_name) + "'s battery is fully charged")
-        # TRUTH TABLE UPDATE LOGIC
+        # BATT/DOCK TRUTH TABLE UPDATE LOGIC
             # docked, full battery
             if robot_docked and not robot_charging:
                 fullcharge = 1
@@ -2432,8 +2464,9 @@ while True:
                 charging = 0
                 docked = 0
                 lowpower = 1
+        # CHARGE CYCLE LOGGING
             if charge_cycle_logging:
-                # were we off dock or still charging?
+                # first run logic, were we off dock or still charging?
                 if startup == 1:
                     # if continuous_cycle_scheduling:
                         # log.put("[system] continuous_cycle: currently set to: "+str(continuous_cycle)+", scheduled: "+str(continuous_cycle_scheduling)+", starts at "+str(continuous_cycle_earliest)+":00 and ends at "+str(continuous_cycle_latest)+":00")
@@ -2453,7 +2486,7 @@ while True:
                                 chrgtxt = "resting"
                             log.put("[chargr] When VecTrix was started, " + str(vector_name) + " was "+chrgtxt+" on the charger, battery level was "+batlvltxt)
                     else:
-                        log.put("[chargr] When this program was started, " + str(vector_name) + " was not on the charger, battery level was "+batlvltxt)
+                        log.put("[chargr] When VecTrix was started, " + str(vector_name) + " was not on the charger, battery level was "+batlvltxt)
                 # start/end times for (dis)charge cycles
                 # if we have an endtime but not a start time, skip!
                 if discharge_stop_time and not discharge_start_time:
@@ -2490,14 +2523,14 @@ while True:
                     d2 = ""
                     partial = 0
                     partialtext = ""
-    # battery logging
+        # battery logging
             if battery_logging:
                 if batlogcounter >= battery_logging_interval:
                     log.put("[chargr] " + str(vector_name) + " raw voltage: " + str(robot_voltage) + ", 20-sample avg: " + str(robot_voltage_calculated) + ", docked: " + str(robot_docked) + ", charging: "+str(robot_charging)+ ", batlevel: " + str(robot_batlevel))
                     batlogcounter = 0
                 else:
-                    batlogcounter = batlogcounter + refresh_rate
-    # object logging only on low battery
+                    batlogcounter += refresh_rate
+        # object logging only on low battery
             if object_logging_while_low_bat:
                 if robot_batlevel == 1 and not robot_docked and not object_logging and lowbat_objloggingtoggle == 0:
                     object_logging = 1
@@ -2515,13 +2548,13 @@ while True:
                     myrobot.events.unsubscribe(on_robot_object_appeared, Events.object_appeared)
                     myrobot.events.unsubscribe(on_robot_object_observed, Events.object_observed)
                     lowbat_objloggingtoggle = 0
-            # robot is stuck and went to sleep while waiting for rescue
+        # robot is stuck and went to sleep while waiting for rescue
             if robot_calmpower and not robot_docked and (robot_pickup or robot_held or robot_cliffdetect) and stuck_warning == 0:
                 stuck_warning = 1
                 log.put("[action] " + str(vector_name) + " is in trouble and waits for your rescue")
             if not robot_docked and not (robot_pickup or robot_held or robot_cliffdetect) and not robot_calmpower:
                 stuck_warning = 0
-    # sensors logging 
+        # sensors logging 
             if sensors_logging:
                 if robot_cliffdetect and cliffswitch == 0 and recent_cliff == 0:
                     log.put("[sensor] " + str(vector_name) + " senses a cliff")
@@ -2565,11 +2598,11 @@ while True:
                     buttonswitch = 1
                 if not robot_button and buttonswitch == 1:
                     buttonswitch = 0
-    # actions logging
+        # actions logging
             # calmpower/sleep logging
             if actions_logging:
                 if robot_calmpower and calmpower == 0 and stuck_warning == 0:
-                    log.put("[action] " + str(vector_name) + " has fallen asleep")
+                    log.put("[action] " + str(vector_name) + " is asleep")
                     calmpower = 1
                 if not robot_calmpower and calmpower == 1:
                     if robot_charging:
@@ -2577,17 +2610,19 @@ while True:
                     if not robot_charging and robot_batlevel == 3:
                         log.put("[action] " + str(vector_name) + " is awake")
                     calmpower = 0
-                # robot dreams
-                if startup == 0 and robot_calmpower and robot_docked and robot_moving and dream_delay_counter > 120 and dreamtoggle == 0:
-                    vector_dream = random.choice(dreamlist)
-                    log.put("[action] " + str(vector_name) + " dreams of " + vector_dream)
+        # robot dreams
+                if robot_calmpower and robot_docked and robot_moving and dream_delay_counter > 180 and dreamtoggle == 0:
+                    dreaming = random.randint(1, 100)
+                    if dreaming > (100-dreamchance):
+                        vector_dream = random.choice(dreamlist)
+                        log.put("[action] " + str(vector_name) + " dreams of " + vector_dream)
                     dreamtoggle = 1
                     dream_delay_counter = 0
-                else:
+                if robot_docked and robot_calmpower and not robot_moving:
                     dream_delay_counter += refresh_rate
-                if not robot_docked:
+                if not robot_docked or dream_delay_counter > 360:
                     dreamtoggle = 0
-                    dream_delay_counter = 0
+        # carrying cube
                 if robot_carrying and carryswitch == 0:
                     log.put("[action] " + str(vector_name) + " is carrying a cube")
                     carryswitch = 1
@@ -2609,7 +2644,7 @@ while True:
                             log.put("[action] " + str(vector_name) + " is attempting to dock with cube/charger")
                 if not robot_docking and dockswitch == 1:        
                     dockswitch = 0   
-    # motion logging
+        # motion logging
             if motion_logging:
                 if robot_moving and movingswitch == 0 and not reduced_logging:
                     movingswitch = 1
@@ -2635,7 +2670,7 @@ while True:
                 if not robot_driving and drivingswitch == 1 and not reduced_logging:
                     log.put("[motion] " + str(vector_name) + "'s wheels are no longer moving")
                     drivingswitch = 0
-    # accel/gyro logging
+        # accel/gyro logging
             if accelgyro_logging:
                 if accelgyrocounter >= accelgyro_logging_interval:
                     accelgyrocounter = 0
@@ -2643,15 +2678,15 @@ while True:
                     log.put("[sensor] " + str(vector_name) + " cal accel: " + str(calibrate_accel_x) + "," + str(calibrate_accel_y) + "," + str(calibrate_accel_z))
                     log.put("[sensor] " + str(vector_name) + " gyro," + str(robot_gyro_x) + "," + str(robot_gyro_y) + "," + str(robot_gyro_z))
                 else:
-                    accelgyrocounter = accelgyrocounter + refresh_rate
-    # rangefinder logging
+                    accelgyrocounter += refresh_rate
+        # rangefinder logging
             if rangefinder_logging:
                 if rangecounter >= rangefinder_logging_interval:
                     log.put("[sensor] " + str(vector_name) + " rangefinder: " + str(robot_distance_mm) + ", signal quality: " + str(robot_signal_quality))
                     rangecounter = 0
                 else: 
-                    rangecounter = rangecounter + refresh_rate
-    # debug logging 
+                    rangecounter += refresh_rate
+        # debug logging 
             if debug_logging and debug_logging_interval > 0:
                     if tickcounter >= debug_logging_interval:
                         log.put("[debugs] " + str(vector_name) + " ticks: "+str(programticks)+", fullcharge:"+str(fullcharge)+", charging:"+str(charging)+", docked:"+str(docked)+", lowpower:"+str(lowpower)+ ", connected:"+str(robot_connected)+", error:"+str(robot_connection_error)+", idle:"+str(round(vector_sit_still_total_time,2))+", last event:"+str(round(last_event_received,2)))
@@ -2665,9 +2700,39 @@ while True:
                                 threadlist = threadlist + str(t.getName())+", "
                             log.put("[debugs] " + str(vector_name) + " threads: "+str(threadlist))
                     else:
-                        tickcounter = tickcounter + refresh_rate
+                        tickcounter += refresh_rate
                     programticks += 1
-    # RECENCY: remembering stuff that just happened so we don't spam the log (initial writeup, this can be more efficient)
+                    
+        # MQTT, probably should get its own thread
+            if MQTT_logging:
+                if mqttcounter > MQTT_MSG_INTERVAL:
+                    mqttcounter = 0
+                    mqttdata = {}
+                    if robot_voltage and robot_voltage != 0:
+                        mqttdata['robots'] = []
+                        mqttdata['robots'].append({
+                            'name': vector_name,
+                            'voltage': robot_voltage,
+                            'batlevel': robot_batlevel,
+                            'charging': robot_charging,
+                            'docked': robot_docked
+                        })
+                    if mqttdata:
+                        MQTT_MSG = str(mqttdata)
+                        try:
+                            mqttc.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE_INTERVAL)
+                            mqttc.publish(MQTT_TOPIC,MQTT_MSG)
+                            mqttc.disconnect()
+                        except Exception as e:
+                            if MQTT_DEBUG:
+                                log.put("[system] issue publishing MQTT data: "+repr(e))
+                            pass
+                    else:
+                        if MQTT_DEBUG:
+                            log.put("[system] no MQTT data to publish")
+                else:
+                    mqttcounter += refresh_rate
+        # RECENCY: remembering stuff that just happened so we don't spam the log (initial writeup, this can be more efficient)
             if robot_carrying:
                 recent_carry = 1
                 recent_carry_timer = 0
@@ -2680,6 +2745,8 @@ while True:
             if robot_held or robot_pickup:
                 recent_pickup = 1
                 recent_pickup_timer = 0
+            # recency counters
+            recent_known_face_seen_timer += refresh_rate
             recent_face_seen_timer += refresh_rate
             recent_cube_tapped_timer += refresh_rate
             recent_cube_rotated_timer += refresh_rate
@@ -2689,6 +2756,7 @@ while True:
             recent_touch_timer = recent_touch_timer + refresh_rate
             recent_cliff_timer += refresh_rate
             recent_pickup_timer += refresh_rate
+            # recency expiry
             if  recent_cube_tapped_timer > 60:
                 recent_cube_tapped = 0
                 recent_cube_tapped_timer = 0
@@ -2704,6 +2772,9 @@ while True:
             if  recent_face_seen_timer > 60:
                 recent_face_seen_timer = 0
                 recent_face_seen = 0
+            if  recent_known_face_seen_timer > 30:
+                recent_known_face_seen_timer = 0
+                recent_known_face_seen = 0
             if recent_carry == 1 and recent_carry_timer > 10 and not robot_carrying:
                 recent_carry_timer = 0
                 recent_carry = 0
