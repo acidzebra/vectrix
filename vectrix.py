@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-vt_version = "0.9.7-beta.2"
+vt_version = "0.9.7-beta.3"
 # --- START OF CONFIG AND INFO SECTION ---
 # --- In which we let you set preferences ---
 #
 # ROBOT SERIAL NUMBER, YOU NEED TO EDIT THIS AND REPLACE WITH YOUR ROBOT'S SERIAL NUMBER
-robot_serial = "00301a24"
+robot_serial = "00902b5d"
 #
 # MANY SWITCHES, DEFAULTS ARE FINE, CHANGE AS DESIRED
 vector_name                  = "Vector"                 # vector_name will be used in most log entries for a more personalized log
@@ -21,7 +21,7 @@ charge_cycle_logging         = True                     # logs duration of charg
 sensors_logging              = True                     # logs various sensors firing, default is True
 actions_logging              = True                     # logs various actions carried out, default is True
 face_logging                 = True                     # logs face detection, can be a bit spammy, default is False
-cube_logging                 = True                     # logs specific cube events (tapping, rotating) but only when cube is connected, default is True
+cube_logging                 = True                     # logs specific cube events (tapping, rotating) but only when cube is connected, default is False
 cube_powersaver              = True                     # if enabled, will disconnect the cube when it becomes available (experimental and possibly useless), default is True
 connect_to_cube              = False                    # will try to connect to an available cube on startup, incompatible with cube_powersaver, default is False
 object_logging               = False                    # logs object appearances, spammy, default is False
@@ -151,8 +151,7 @@ if MQTT_logging:
 # --- START OF VARIABLES SECTION ---
 # --- In which we define the robot, ui, and various states for later use ---
 # define the robot with the configured options
-global myrobot
-myrobot = anki_vector.AsyncRobot(robot_serial,default_logging=False,behavior_control_level=None,enable_face_detection=face_logging,estimate_facial_expression=face_logging,enable_custom_object_detection=object_logging,enable_nav_map_feed=misc_logging,behavior_activation_timeout=15, show_viewer=show_viewer, show_3d_viewer=show_3dviewer)
+myrobot = anki_vector.AsyncRobot(robot_serial,default_logging=True,behavior_control_level=None,enable_face_detection=face_logging,estimate_facial_expression=face_logging,enable_custom_object_detection=object_logging,enable_nav_map_feed=misc_logging,behavior_activation_timeout=15, show_viewer=show_viewer, show_3d_viewer=show_3dviewer)
 conn_object = myrobot.conn
 # system variables
 global log
@@ -238,16 +237,27 @@ d2                              = ""
 d3                              = ""
 face_name                       = ""
 gyrox                           = 0
+gyrox_old                       = 1
+gyroy_old                       = 1
+gyroz_old                       = 1
 gyroy                           = 0
 gyroz                           = 0
 accelx                          = 0
 accely                          = 0
 accelz                          = 0
+accelx_old                      = 1
+accely_old                      = 1
+accelz_old                      = 1
 heada                           = 0
+heada_old                       = 1
 lifta                           = 0
+lifta_old                       = 1
 lwheelspeed                     = 0
+lwheelspeed_old                 = 1
 rwheelspeed                     = 0
+rwheelspeed_old                 = 1
 displaydistance                 = 0
+displaydistance_old             = 1
 calibrate_accel_x               = 0
 calibrate_accel_y               = 0
 calibrate_accel_z               = 0
@@ -270,48 +280,48 @@ csvcounter                      = 0
 mqttcounter                     = 0
 presencecounter                 = 0
 # data from event robot_state
-robot_pose_angle_rad                = 0
-robot_pose_pitch_rad                = 0
-robot_left_wheel_speed_mmps         = 0	
-robot_left_wheel_speed_mmps_old     = 0
-robot_right_wheel_speed_mmps        = 0
-robot_right_wheel_speed_mmps_old    = 0
-robot_head_angle_rad                = 0
-robot_head_angle_rad_old            = 0
-robot_lift_height_mm                = 0
+robot_pose_angle_rad	        = 0
+robot_pose_pitch_rad	        = 0
+robot_left_wheel_speed_mmps     = 0	
+robot_left_wheel_speed_mmps_old = 0
+robot_right_wheel_speed_mmps	= 0
+robot_right_wheel_speed_mmps_old = 0
+robot_head_angle_rad	        = 0
+robot_head_angle_rad_old        = 0
+robot_lift_height_mm	        = 0
 robot_lift_height_mm_old            = 0
-robot_carrying_object_id            = 0
-robot_head_tracking_object_id       = 0	
-robot_localized_to_object_id        = 0
-robot_status                        = 0
-robot_raw_touch_value               = 0
-robot_accel_x                       = 0
-robot_accel_x_old                   = 0
-robot_accel_y                       = 0
-robot_accel_y_old                   = 0
-robot_accel_z                       = 0
-robot_accel_z_old                   = 0 
-robot_gyro_x                        = 0   
-robot_gyro_x_old                    = 0
-robot_gyro_y                        = 0
-robot_gyro_y_old                    = 0
-robot_gyro_z                        = 0 
-robot_gyro_z_old                    = 0
-robot_pose_x                        = 0
-robot_pose_y                        = 0
-robot_pose_z                        = 0
-robot_pose_q0                       = 0
-robot_pose_q1                       = 0
-robot_pose_q2                       = 0
-robot_pose_q3                       = 0
-robot_pose_origin_id                = 0
-robot_distance_mm                   = 0
-robot_distance_mm_old               = 0
-robot_signal_quality                = 0
-robot_unobstructed                  = True
-robot_found_object                  = False
-robot_is_lift_in_fov                = False 
-robot_is_being_touched              = False 
+robot_carrying_object_id        = 0
+robot_head_tracking_object_id   = 0	
+robot_localized_to_object_id    = 0
+robot_status                    = 0
+robot_raw_touch_value           = 0
+robot_accel_x                   = 0
+robot_accel_x_old               = 0
+robot_accel_y                   = 0
+robot_accel_y_old               = 0
+robot_accel_z                   = 0
+robot_accel_z_old               = 0 
+robot_gyro_x                    = 0   
+robot_gyro_x_old               = 0
+robot_gyro_y                    = 0
+robot_gyro_y_old                = 0
+robot_gyro_z                    = 0 
+robot_gyro_z_old                = 0
+robot_pose_x                    = 0
+robot_pose_y                    = 0
+robot_pose_z                    = 0
+robot_pose_q0                   = 0
+robot_pose_q1                   = 0
+robot_pose_q2                   = 0
+robot_pose_q3                   = 0
+robot_pose_origin_id            = 0
+robot_distance_mm               = 0
+robot_distance_mm_old           = 0
+robot_signal_quality	        = 0
+robot_unobstructed              = True
+robot_found_object              = False
+robot_is_lift_in_fov            = False 
+robot_is_being_touched          = False 
 # UI value calc
 rawvalue                        = 0
 returnvalue                     = 0
@@ -516,7 +526,7 @@ def logging_thread():
             del log
             logging_thread_running = 0
             return
-        sleep(refresh_rate/2)
+        sleep(refresh_rate/5)
 # ui_thread is responsible for displaying and refreshing the UI
 def ui_thread():
     global robotlog, log
@@ -702,6 +712,7 @@ def robot_connection_thread():
     while True:
         try:
             while robot_connected == 1 and program_exit_requested == 0:
+                robot_current_control_level = myrobot.conn.behavior_control_level
                 sleep(refresh_rate*2)
             if robot_connected == 0 and robot_connection_error == 1 and program_exit_requested == 0:
                 if debug_logging or connect_logging:
@@ -789,9 +800,7 @@ def robot_connection_thread():
             if debug_logging:
                 log.put("[errors] robot_connection_thread UNHANDLED E: " +repr(e))
         # function to aid in control loss detection
-        if robot_connected == 1:
-            robot_current_control_level = myrobot.conn.behavior_control_level
-        sleep(refresh_rate)
+        sleep(refresh_rate*4)
 # robot_battery_thread is responsible for getting and publishing the robot battery data (voltage/charging/docked/batlevel)
 def robot_battery_thread():
     #robot_battery_state = myrobot.get_battery_state()
@@ -1472,10 +1481,14 @@ def robot_mix_animations():
         timeout = 0
         while str(play_anim1_future).find("pending") != -1 or str(play_anim2_future).find("pending") != -1:
             if not robot_good_to_go or robot_current_control_level == None:
+                if reanimator_debug and not reduced_logging:
+                    log.put("[ranmtr] robot_random_drive: control loss, G2G: "+str(robot_good_to_go)+", CL: "+str(robot_current_control_level))
                 break
             if timeout >= 8:
                 if rainbow_eyes and not robot_current_control_level == None:
                     eyecolor_future = myrobot.behavior.set_eye_color(eye_hue_yellow,1)
+                if reanimator_debug and not reduced_logging:
+                    log.put("[ranmtr] robot_random_drive: timeout")
                 break
             if rainbow_eyes and not robot_current_control_level == None:
                 eyecolor_future = myrobot.behavior.set_eye_color(eye_hue_blue,1)
@@ -1486,7 +1499,14 @@ def robot_mix_animations():
             if rainbow_eyes and eyecolor_future:
                 eyecolor_future.cancel()
             return
-        sleep(2)
+        animwait = 0
+        while animwait < 2:
+            animwait += refresh_rate
+            if not robot_good_to_go or robot_current_control_level == None:
+                if reanimator_debug and not reduced_logging:
+                    log.put("[ranmtr] robot_random_drive: control loss, G2G: "+str(robot_good_to_go)+", CL: "+str(robot_current_control_level))
+                break
+            sleep(refresh_rate)
         play_anim1_future.cancel()
         play_anim2_future.cancel()
         if rainbow_eyes and eyecolor_future:
@@ -1556,7 +1576,8 @@ def robot_random_drive():
             if not request:
                 return
             else:
-                eyecolor_future = myrobot.behavior.set_eye_color(eye_hue_blue,1)
+                if rainbow_eyes:
+                    eyecolor_future = myrobot.behavior.set_eye_color(eye_hue_blue,1)
         else:
             return
         sleep(0.2)
@@ -1580,6 +1601,8 @@ def robot_random_drive():
             timeout = 0
             while str(turn_future).find("pending") != -1 or str(head_future).find("pending") != -1 or str(lift_future).find("pending") != -1:
                 if not robot_good_to_go or robot_current_control_level == None:
+                    if reanimator_debug and not reduced_logging:
+                        log.put("[ranmtr] robot_random_drive: control loss, G2G: "+str(robot_good_to_go)+", CL: "+str(robot_current_control_level))
                     break
                 if timeout >= 2:
                     if rainbow_eyes and not robot_current_control_level == None:
@@ -2192,6 +2215,8 @@ def robot_control_request(control_or_release, force_control):
                             else:
                                 if debug_logging and not reduced_logging:
                                     log.put("[debugs] robot_control_request: " + str(vector_name) + " state out of scope")
+                        if debug_logging and not reduced_logging:
+                            log.put("[debugs] robot_control_request: " + str(vector_name) + " returning FALSE, G2G: "+str(robot_good_to_go)+", CL: "+str(robot_current_control_level))
                         control_response = False
                         return control_response
                     timeout = timeout + refresh_rate
@@ -2201,12 +2226,19 @@ def robot_control_request(control_or_release, force_control):
                     sleep(0.2)
                     if rainbow_eyes and eyecolor_future:
                         eyecolor_future.cancel()
-                sleep(1)
-                control_response = True
+                sleep(2)
+                if robot_current_control_level == None:
+                    control_response = False
+                    if debug_logging and not reduced_logging:
+                        log.put("[debugs] robot_control_request: " + str(vector_name) + " returning FALSE, G2G: "+str(robot_good_to_go)+", CL: "+str(robot_current_control_level))
+                else:
+                    control_response = True
+                    if debug_logging and not reduced_logging:
+                        log.put("[debugs] robot_control_request: " + str(vector_name) + " returning TRUE, G2G: "+str(robot_good_to_go)+", CL: "+str(robot_current_control_level))
                 return control_response
             else:
                 if debug_logging and not reduced_logging:
-                    log.put("[debugs] robot_control_request: " + str(vector_name) + " state out of scope")
+                    log.put("[debugs] robot_control_request: " + str(vector_name) + " state out of scope, returning FALSE, G2G: "+str(robot_good_to_go)+", CL: "+str(robot_current_control_level))
                     control_response = False
                     return control_response
         except Exception as e:
@@ -3090,7 +3122,7 @@ while True:
                         log.put("[debugs] " + str(vector_name) + " ticks: "+str(programticks)+", fullcharge:"+str(fullcharge)+", charging:"+str(charging)+", docked:"+str(docked)+", lowpower:"+str(lowpower)+ ", connected:"+str(robot_connected)+", error:"+str(robot_connection_error)+", idle:"+str(round(vector_sit_still_total_time,2))+", last event:"+str(round(last_event_received,2)))
                         log.put("[debugs] " + str(vector_name) + " UI:"+str(ui_thread_running)+", conn:"+str(robot_connection_thread_running)+", batt:"+str(robot_battery_thread_running)+", sensor:"+str(robot_sensor_thread_running)+", events:"+str(robot_event_thread_running)+", reanim:"+str(reanimator_thread_running)+", yeet:"+str(threadrunning)+", CC: "+str(continuous_cycle)+", CCS: "+str(continuous_cycle_scheduling)+", GTG :"+str(robot_good_to_go))
                         log.put("[debugs] " + str(vector_name) + " char: "+str(robot_charging)+", dock:"+str(robot_docked)+", calm:"+str(robot_calmpower)+", clif:"+str(robot_cliffdetect)+", fall:"+str(robot_falling)+ ", pick:"+str(robot_pickup)+", held:"+str(robot_held)+", butt:"+str(robot_button)+", carr:"+str(robot_carrying))
-                        log.put("[debugs] " + str(vector_name) + " dock: "+str(robot_docking)+", move:"+str(robot_moving)+", anim:"+str(robot_animating)+", path:"+str(robot_pathing)+", driv:"+str(robot_driving)+ ", volt:"+str(round(robot_voltage,2))+", blvl:"+str(robot_batlevel))
+                        log.put("[debugs] " + str(vector_name) + " control: "+str(robot_current_control_level)+", dock: "+str(robot_docking)+", move:"+str(robot_moving)+", anim:"+str(robot_animating)+", path:"+str(robot_pathing)+", driv:"+str(robot_driving)+ ", volt:"+str(round(robot_voltage,2))+", blvl:"+str(robot_batlevel))
                         tickcounter = 0
                         threadlist = ""
                         if not reduced_logging:
