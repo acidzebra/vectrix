@@ -96,9 +96,9 @@ MQTT_TOPIC                   = "VectorStatus"           # MQTT topic to post to,
 MQTT_MSG_INTERVAL            = 5                        # interval in seconds to post to MQTT, dewfault is 5
 MQTT_DEBUG                   = False                    # debug logging for MQTT, default is False
 # debug switches
-reanimator_debug             = False                    # spammy but will tell you exactly what reanimator is doing, default is False
+reanimator_debug             = True                    # spammy but will tell you exactly what reanimator is doing, default is False
 endless_reanimator           = False                    # will endlessly run reanimator, overriding Vector's normal behaviors until the battery goes low
-debug_logging                = False                    # logs extended debug messages about robot activity, program activity, etc, default is False
+debug_logging                = True                    # logs extended debug messages about robot activity, program activity, etc, default is False
 debug_logging_interval       = 0                        # how often we log a summary of debug status in seconds, default is whatever it says currently. Set to 0 to disable intermittent recap (but keep all the rest of the debug msgs)
 use_presence                 = False                    # advanced users only, feature to only eject Vector from charger if there is presence in the room. How that presence is determined is up to you, you will have to edit the code, default is False
 # --- END OF CONFIG AND INFO SECTION ---
@@ -1318,8 +1318,6 @@ def yeetbot():
                 return
             else:
                 incontrol = 1
-            # this used to use drive_off_charger but that function is pretty unreliable, trying with low-level commands
-            #drive_off_anim_future = myrobot.anim.play_animation("anim_referencing_smile_01", ignore_body_track=True, ignore_head_track=False, ignore_lift_track=True)
             myrobot.motors.set_wheel_motors(0, 0)
             sleep(0.4)
             myrobot.motors.set_wheel_motors(25, 25)
@@ -1335,8 +1333,6 @@ def yeetbot():
                 if dock_events_logging and not reduced_logging:  
                     msg="[cycles] " + str(vector_name) + " didn't feel like leaving the charger, will retry a little later"
                     log.put(msg)
-                # force_off_dock_failure = 1
-            #drive_off_anim_future.cancel()
             sleep(1)
             if rainbow_eyes and eyecolor_future:
                 eyecolor_future.cancel()
@@ -1632,7 +1628,6 @@ def robot_random_drive():
         while total_steps_count < 3 and robot_good_to_go:      
             myrobot.motors.set_wheel_motors(0, 0)
             sleep(0.2)
-            release_motors_future.cancel()
             random_turn = random.randrange(45, 180, 1)
             plusminus = random.randint(0, 1)
             if plusminus == 1:
