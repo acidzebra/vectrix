@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-vt_version = "0.9.7-beta.3"
+vt_version = "0.9.7"
 # --- START OF CONFIG AND INFO SECTION ---
 # --- In which we let you set preferences ---
 #
