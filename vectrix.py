@@ -96,9 +96,9 @@ MQTT_TOPIC                   = "VectorStatus"           # MQTT topic to post to,
 MQTT_MSG_INTERVAL            = 5                        # interval in seconds to post to MQTT, dewfault is 5
 MQTT_DEBUG                   = False                    # debug logging for MQTT, default is False
 # debug switches
-reanimator_debug             = True                    # spammy but will tell you exactly what reanimator is doing, default is False
+reanimator_debug             = False                    # spammy but will tell you exactly what reanimator is doing, default is False
 endless_reanimator           = False                    # will endlessly run reanimator, overriding Vector's normal behaviors until the battery goes low
-debug_logging                = True                    # logs extended debug messages about robot activity, program activity, etc, default is False
+debug_logging                = False                    # logs extended debug messages about robot activity, program activity, etc, default is False
 debug_logging_interval       = 0                        # how often we log a summary of debug status in seconds, default is whatever it says currently. Set to 0 to disable intermittent recap (but keep all the rest of the debug msgs)
 use_presence                 = False                    # advanced users only, feature to only eject Vector from charger if there is presence in the room. How that presence is determined is up to you, you will have to edit the code, default is False
 # --- END OF CONFIG AND INFO SECTION ---
