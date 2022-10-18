@@ -2,6 +2,11 @@ Changelog
 
 note: earlier versions of VecTrix (named VectorDiag) are available here: https://gist.github.com/acidzebra/74d7b288b267d7fcea8c33358d4c2e78
 
+0.9.7-beta.3
+- MQTT and CSV logging moved to logging thread
+- connection thread improvements
+- code cleanup
+
 0.9.7-beta.2
 - (minor) more error logging
 - (minor) use of room presence (advanced users, not documented, if you have some method of determining room presence that you can access from python you can send Vector off charger only when the room is occupied)

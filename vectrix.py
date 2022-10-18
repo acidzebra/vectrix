@@ -157,6 +157,7 @@ conn_object = myrobot.conn
 global log
 log                             = queue.Queue()
 evt                             = threading.Event()
+sleeptime                       = 30
 startup                         = 1
 programticks                    = 1
 logtoggle                       = 0
@@ -166,7 +167,6 @@ lowbat_objloggingtoggle         = 0
 force_off_dock_failure          = 0
 last_event_received             = 0
 quit_on_error_request           = 0
-sleeptime                       = 30
 # robot connection
 robot_connected                 = 0
 robot_connection_error          = 0
@@ -183,9 +183,9 @@ calmpower                       = 0
 stuck_warning                   = 0
 highest_pct_value               = 0
 lowest_pct_value                = 0
+robot_batlevel_old              = 3
 robot_charging_old              = True
 robot_docked_old                = True
-robot_batlevel_old              = 3
 robot_calmpower_old             = True
 robot_good_to_go                = False
 robot_charging                  = False
@@ -204,9 +204,9 @@ robot_pathing                   = False
 robot_driving                   = False
 # control requests 
 control_response                = False
+force_control                   = False
 robot_current_control_level     = None
 control_or_release              = 0
-force_control                   = False
 # truth table
 fullcharge                      = 0
 lowpower                        = 0
@@ -237,27 +237,16 @@ d2                              = ""
 d3                              = ""
 face_name                       = ""
 gyrox                           = 0
-gyrox_old                       = 1
-gyroy_old                       = 1
-gyroz_old                       = 1
 gyroy                           = 0
 gyroz                           = 0
 accelx                          = 0
 accely                          = 0
 accelz                          = 0
-accelx_old                      = 1
-accely_old                      = 1
-accelz_old                      = 1
 heada                           = 0
-heada_old                       = 1
 lifta                           = 0
-lifta_old                       = 1
 lwheelspeed                     = 0
-lwheelspeed_old                 = 1
 rwheelspeed                     = 0
-rwheelspeed_old                 = 1
 displaydistance                 = 0
-displaydistance_old             = 1
 calibrate_accel_x               = 0
 calibrate_accel_y               = 0
 calibrate_accel_z               = 0
@@ -280,48 +269,48 @@ csvcounter                      = 0
 mqttcounter                     = 0
 presencecounter                 = 0
 # data from event robot_state
-robot_pose_angle_rad	        = 0
-robot_pose_pitch_rad	        = 0
-robot_left_wheel_speed_mmps     = 0	
-robot_left_wheel_speed_mmps_old = 0
-robot_right_wheel_speed_mmps	= 0
-robot_right_wheel_speed_mmps_old = 0
-robot_head_angle_rad	        = 0
-robot_head_angle_rad_old        = 0
-robot_lift_height_mm	        = 0
+robot_pose_angle_rad                = 0
+robot_pose_pitch_rad                = 0
+robot_left_wheel_speed_mmps         = 0	
+robot_left_wheel_speed_mmps_old     = 0
+robot_right_wheel_speed_mmps        = 0
+robot_right_wheel_speed_mmps_old    = 0
+robot_head_angle_rad                = 0
+robot_head_angle_rad_old            = 0
+robot_lift_height_mm                = 0
 robot_lift_height_mm_old            = 0
-robot_carrying_object_id        = 0
-robot_head_tracking_object_id   = 0	
-robot_localized_to_object_id    = 0
-robot_status                    = 0
-robot_raw_touch_value           = 0
-robot_accel_x                   = 0
-robot_accel_x_old               = 0
-robot_accel_y                   = 0
-robot_accel_y_old               = 0
-robot_accel_z                   = 0
-robot_accel_z_old               = 0 
-robot_gyro_x                    = 0   
-robot_gyro_x_old               = 0
-robot_gyro_y                    = 0
-robot_gyro_y_old                = 0
-robot_gyro_z                    = 0 
-robot_gyro_z_old                = 0
-robot_pose_x                    = 0
-robot_pose_y                    = 0
-robot_pose_z                    = 0
-robot_pose_q0                   = 0
-robot_pose_q1                   = 0
-robot_pose_q2                   = 0
-robot_pose_q3                   = 0
-robot_pose_origin_id            = 0
-robot_distance_mm               = 0
-robot_distance_mm_old           = 0
-robot_signal_quality	        = 0
-robot_unobstructed              = True
-robot_found_object              = False
-robot_is_lift_in_fov            = False 
-robot_is_being_touched          = False 
+robot_carrying_object_id            = 0
+robot_head_tracking_object_id       = 0	
+robot_localized_to_object_id        = 0
+robot_status                        = 0
+robot_raw_touch_value               = 0
+robot_accel_x                       = 0
+robot_accel_x_old                   = 0
+robot_accel_y                       = 0
+robot_accel_y_old                   = 0
+robot_accel_z                       = 0
+robot_accel_z_old                   = 0 
+robot_gyro_x                        = 0   
+robot_gyro_x_old                    = 0
+robot_gyro_y                        = 0
+robot_gyro_y_old                    = 0
+robot_gyro_z                        = 0 
+robot_gyro_z_old                    = 0
+robot_pose_x                        = 0
+robot_pose_y                        = 0
+robot_pose_z                        = 0
+robot_pose_q0                       = 0
+robot_pose_q1                       = 0
+robot_pose_q2                       = 0
+robot_pose_q3                       = 0
+robot_pose_origin_id                = 0
+robot_distance_mm                   = 0
+robot_distance_mm_old               = 0
+robot_signal_quality                = 0
+robot_unobstructed                  = True
+robot_found_object                  = False
+robot_is_lift_in_fov                = False 
+robot_is_being_touched              = False 
 # UI value calc
 rawvalue                        = 0
 returnvalue                     = 0
@@ -478,9 +467,11 @@ def logging_thread():
     global logging_thread_running
     data = ""
     old_data = ""
+    mqttcounter = 0
+    csvcounter = 0
     while True:
         try:
-            while not log.empty():
+            if not log.empty():
                 data = log.get_nowait()
                 timestamp = '{:%H:%M:%S}'.format(datetime.datetime.now())
                 try:
@@ -520,6 +511,56 @@ def logging_thread():
             if debug_logging:
                 timestamp = '{:%H:%M:%S}'.format(datetime.datetime.now())
                 robotlog.append(timestamp+"[errors] log error: "+repr(e))
+        # MQTT logging
+        if MQTT_logging:
+            if mqttcounter > MQTT_MSG_INTERVAL:
+                mqttcounter = 0
+                mqttdata = {}
+                if robot_voltage and robot_voltage != 0:
+                    mqttdata['robots'] = []
+                    mqttdata['robots'].append({
+                        'name': vector_name,
+                        'voltage': robot_voltage,
+                        'batlevel': robot_batlevel,
+                        'charging': robot_charging,
+                        'docked': robot_docked
+                    })
+                if mqttdata:
+                    MQTT_MSG = str(mqttdata)
+                    try:
+                        mqttc.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE_INTERVAL)
+                        mqttc.publish(MQTT_TOPIC,MQTT_MSG)
+                        mqttc.disconnect()
+                    except Exception as e:
+                        if MQTT_DEBUG:
+                            log.put("[errors] issue publishing MQTT data: "+repr(e))
+                        pass
+                else:
+                    if MQTT_DEBUG:
+                        log.put("[system] no MQTT data to publish")
+            else:
+                mqttcounter += (refresh_rate/5)
+        # CSV file logging
+        if battery_csv_logging and robot_connected == 1:
+            if csvcounter > battery_csv_logging_interval:
+                date = datetime.datetime.today().strftime('%Y-%m-%d')
+                timestamp = '{:%H:%M:%S}'.format(datetime.datetime.now())
+                # "date,time,voltage,20sample_avg,calc_pct,batt_level,is_docked,is_charging"
+                csvlog=str(date)+","+str(timestamp)+","+str(robot_voltage)+","+str(robot_voltage_calculated)+","+str(voltage_display_value)+","+str(robot_batlevel)+","+str(robot_docked)+","+str(robot_charging)
+                csvcounter = 0
+                try:
+                    if datestamp_log_files:
+                        log_file = open(date+"-"+battery_csv_filename, 'a')
+                    else:
+                        log_file = open(battery_csv_filename, 'a')
+                    log_file.write(csvlog + " \n")
+                    log_file.close()
+                except Exception as e:
+                    timestamp = '{:%H:%M:%S}'.format(datetime.datetime.now())
+                    msg = "[errors] issue logging to CSV file " + str(logfile) + "- E: "+repr(e)
+                    log.put(timestamp + " " + msg)    
+            else:
+                csvcounter += (refresh_rate/5)
         if logging_thread_stop == 1:
             with log.mutex:
                 log.queue.clear()
@@ -623,6 +664,8 @@ def robot_connection_thread():
     except anki_vector.exceptions.VectorNotFoundException as e:
         if debug_logging or connect_logging:
             log.put("[connct] " + str(vector_name) + " not found - make sure " + str(vector_name) + " is on and the system running this script is connected to the same wireless network, closing and retrying connection, stand by")
+        #myrobot.disconnect()
+        myrobot.conn.close()
         robot_connected = 0
         robot_connection_error = 0
         if quit_on_error and robot_battery_thread_running == 0:
@@ -645,11 +688,16 @@ def robot_connection_thread():
         if repr(e).find("DEADLINE_EXCEEDED") != -1:
             if debug_logging or connect_logging:
                 log.put("[connct] SDK/OS timeout bug, closing and retrying connection, stand by")
+            #myrobot.conn.close()
+            myrobot.disconnect()
+            myrobot.conn.close()
             robot_connection_error = 1
             robot_connected = 0
         elif repr(e).find("connection has been closed") != -1:
             if debug_logging or connect_logging:
                 log.put("[connct] " + str(vector_name) + " is online but keeps closing connection, TRY REBOOTING VECTOR (unless currently in boot sequence), we will keep retrying")
+            myrobot.disconnect()
+            myrobot.conn.close()
             robot_connection_error = 1
             robot_connected = 0
             if quit_on_error and robot_battery_thread_running == 0:
@@ -659,6 +707,8 @@ def robot_connection_thread():
         else:
             if debug_logging:
                 log.put("[connct] robot_connection_thread: A general connection error occurred. E: " + repr(e))
+            myrobot.disconnect()
+            myrobot.conn.close()
             robot_connection_error = 1
             robot_connected = 0
             if quit_on_error and robot_battery_thread_running == 0:
@@ -1270,16 +1320,11 @@ def yeetbot():
                 incontrol = 1
             # this used to use drive_off_charger but that function is pretty unreliable, trying with low-level commands
             #drive_off_anim_future = myrobot.anim.play_animation("anim_referencing_smile_01", ignore_body_track=True, ignore_head_track=False, ignore_lift_track=True)
-            sleep(2)
-            release_motors_future = myrobot.motors.set_wheel_motors(0, 0)
+            myrobot.motors.set_wheel_motors(0, 0)
             sleep(0.4)
-            release_motors_future.cancel()
-            forward_motors_future = myrobot.motors.set_wheel_motors(25, 25)
+            myrobot.motors.set_wheel_motors(25, 25)
             sleep(4.5)
-            forward_motors_future.cancel()
-            stop_motors_future = myrobot.motors.stop_all_motors()
-            sleep(0.3)
-            stop_motors_future.cancel()
+            myrobot.motors.stop_all_motors()
             if not robot_docked:
                 # force_off_dock_failure = 0
                 if rainbow_eyes and not robot_current_control_level == None:
@@ -1585,7 +1630,7 @@ def robot_random_drive():
             eyecolor_future.cancel()
         total_steps_count = 0
         while total_steps_count < 3 and robot_good_to_go:      
-            release_motors_future = myrobot.motors.set_wheel_motors(0, 0)
+            myrobot.motors.set_wheel_motors(0, 0)
             sleep(0.2)
             release_motors_future.cancel()
             random_turn = random.randrange(45, 180, 1)
@@ -1735,11 +1780,9 @@ def robot_random_drive():
                     request = robot_control_request(1,False)
                     if not request:
                         return
-                release_motors_future = myrobot.motors.set_wheel_motors(0, 0)
-                release_lift_future   = myrobot.motors.set_lift_motor(0)
+                myrobot.motors.set_wheel_motors(0, 0)
+                myrobot.motors.set_lift_motor(0)
                 sleep(0.2)
-                release_motors_future.cancel()
-                release_lift_future.cancel()
                 # back up a lil' if we're close to a wall
                 backupchance = random.randint(1, 100)
                 if backupchance > 60:
@@ -1797,11 +1840,9 @@ def robot_random_drive():
                             if not request:
                                 return         
                         eyecolor_future = myrobot.behavior.set_eye_color(eye_hue_blue,1)
-                        release_motors_future = myrobot.motors.set_wheel_motors(0, 0)
-                        release_lift_future = myrobot.motors.set_lift_motor(0)
+                        myrobot.motors.set_wheel_motors(0, 0)
+                        myrobot.motors.set_lift_motor(0)
                         sleep(0.2)
-                        release_motors_future.cancel()
-                        release_lift_future.cancel()
                         if rainbow_eyes and eyecolor_future:
                             eyecolor_future.cancel()
                         # having a laugh, mate?
@@ -2177,10 +2218,6 @@ def sigterm_handler(_signo, _stack_frame):
             myrobot.world.disconnect_cube()
         except:
             log.put("[errors] issue disconnecting from " + str(vector_name) + "'s cube")
-    while reanimator_thread_running == 1:
-        sleep(refresh_rate)
-    while threadrunning == 1:
-        sleep(refresh_rate)
     robot_battery_thread_stop = 1
     robot_sensor_thread_stop = 1
     robot_event_thread_stop = 1
@@ -2454,7 +2491,7 @@ if battery_csv_logging:
 # MQTT
 if MQTT_logging:
     mqttc = mqtt.Client()
-    mqttc.on_publish = on_publish      
+    mqttc.on_publish = on_publish
 # --- END OF LAUNCH PREP SECTION ---
 # --- START OF MAIN LOOP ---
 # -- in which we toil endlessly until told otherwise ---
@@ -2512,13 +2549,6 @@ while True:
                 else:
                     battcounter += 1
                     robot_voltage_average += robot_voltage
-                if robot_charging != robot_charging_old:
-                    myrobot_charging.value = bool_to_value(robot_charging)
-                    robot_charging_old = robot_charging
-                if robot_docked != robot_docked_old:
-                    myrobot_docked.value = bool_to_value(robot_docked)
-                    voltage_display_color = ui_color_4
-                    robot_docked_old = robot_docked
                 if robot_batlevel != robot_batlevel_old:
                     if robot_batlevel == 1:
                         myrobot_batlevel.value = 33
@@ -2533,9 +2563,14 @@ while True:
                         myrobot_batlevel.color = ui_color_2
                         voltage_display_value = 100 
                     robot_batlevel_old = robot_batlevel
-                if robot_calmpower != robot_calmpower_old:
-                    myrobot_calmpower.value = bool_to_value(robot_calmpower)
-                    robot_calmpower_old = robot_calmpower
+                if robot_charging != robot_charging_old:
+                    myrobot_charging.value = bool_to_value(robot_charging)
+                    robot_charging_old = robot_charging
+                if robot_docked:
+                    if robot_docked != robot_docked_old:
+                        myrobot_docked.value = bool_to_value(robot_docked)
+                        robot_docked_old = robot_docked
+                    voltage_display_color = ui_color_4
                 myrobot_voltage.color = voltage_display_color
                 myrobot_voltage.value = voltage_display_value
         # UI: SENSORS 
@@ -2678,7 +2713,7 @@ while True:
 # This is also where I suggest you add your own routines. You can read robot state values such as robot_good_to_go, robot_current_control_level, robot_control_blocking, robot_voltage, robot_held, robot_...etc.
 # you can also call routines like robot_random_drive(), robot_control_request(control_or_release), robot_roll_cube()
     # CONTINUOUS CYCLE 
-            if continuous_cycle_scheduling and (continuous_cycle or cctoggle == 1) and robot_docked:
+            if robot_docked and continuous_cycle_scheduling and (continuous_cycle or cctoggle == 1):
                 cctime = datetime.datetime.now().time()
                 timestamp = '{:%H:%M}'.format(datetime.datetime.now())
                 if (cctime > datetime.time(continuous_cycle_earliest) and cctime < datetime.time(continuous_cycle_latest)):
@@ -2695,7 +2730,7 @@ while True:
                         ccannounce = 0
                     continuous_cycle = False
                     cctoggle = 1
-            if continuous_cycle and robot_docked:
+            if robot_docked and continuous_cycle:
                 # ADVANCED USE ONLY: if you have a method to detect presence replace my code here
                 # this example will only work for my home, I use several Hue sensors and openHAB to come to a consensus on whether a room is occupied
                 if use_presence:
@@ -2742,7 +2777,7 @@ while True:
                     threadrunning = 0
                     force_off_dock_failure = 0
     # VECTOR REANIMATOR, or how often does Vector sit still during an outing (and can we fix it)(yes we can)
-            if reanimator and not robot_docked:
+            if not robot_docked and reanimator:
                 if robot_good_to_go:
                 #if not robot_cliffdetect and not robot_held and not robot_pickup and not robot_docked and reanimator_thread_running == 0:
                     if stillswitch == 1 and (robot_moving or robot_driving) and reanimator_thread_running == 0:
@@ -2788,27 +2823,7 @@ while True:
 # --- LOGGING SECTION ---
 # --- In which we turn gathered data into log entries ---
     # BATTERY AND DOCK LOGIC
-        # CSV file logging
-            if battery_csv_logging and robot_connected == 1:
-                if csvcounter > battery_csv_logging_interval:
-                    date = datetime.datetime.today().strftime('%Y-%m-%d')
-                    timestamp = '{:%H:%M:%S}'.format(datetime.datetime.now())
-                    # "date,time,voltage,20sample_avg,calc_pct,batt_level,is_docked,is_charging"
-                    csvlog=str(date)+","+str(timestamp)+","+str(robot_voltage)+","+str(robot_voltage_calculated)+","+str(voltage_display_value)+","+str(robot_batlevel)+","+str(robot_docked)+","+str(robot_charging)
-                    csvcounter = 0
-                    try:
-                        if datestamp_log_files:
-                            log_file = open(date+"-"+battery_csv_filename, 'a')
-                        else:
-                            log_file = open(battery_csv_filename, 'a')
-                        log_file.write(csvlog + " \n")
-                        log_file.close()
-                    except Exception as e:
-                        timestamp = '{:%H:%M:%S}'.format(datetime.datetime.now())
-                        msg = "[errors] issue logging to CSV file " + str(logfile) + "- E: "+repr(e)
-                        log.put(timestamp + " " + msg)    
-                else:
-                    csvcounter += refresh_rate
+
             # log charger state after startup and initial filling of the truth table
             if startup == 0:
                 if not robot_docked:
@@ -3133,35 +3148,6 @@ while True:
                         tickcounter += refresh_rate
                     programticks += 1
                     
-        # MQTT, probably should get its own thread
-            if MQTT_logging:
-                if mqttcounter > MQTT_MSG_INTERVAL:
-                    mqttcounter = 0
-                    mqttdata = {}
-                    if robot_voltage and robot_voltage != 0:
-                        mqttdata['robots'] = []
-                        mqttdata['robots'].append({
-                            'name': vector_name,
-                            'voltage': robot_voltage,
-                            'batlevel': robot_batlevel,
-                            'charging': robot_charging,
-                            'docked': robot_docked
-                        })
-                    if mqttdata:
-                        MQTT_MSG = str(mqttdata)
-                        try:
-                            mqttc.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE_INTERVAL)
-                            mqttc.publish(MQTT_TOPIC,MQTT_MSG)
-                            mqttc.disconnect()
-                        except Exception as e:
-                            if MQTT_DEBUG:
-                                log.put("[errors] issue publishing MQTT data: "+repr(e))
-                            pass
-                    else:
-                        if MQTT_DEBUG:
-                            log.put("[system] no MQTT data to publish")
-                else:
-                    mqttcounter += refresh_rate
         # RECENCY: remembering stuff that just happened so we don't spam the log (initial writeup, this can be more efficient)
             if robot_carrying:
                 recent_carry = 1
@@ -3176,6 +3162,14 @@ while True:
                 recent_pickup = 1
                 recent_pickup_timer = 0
             # recency counters
+            # timertuples = [ (recent_known_face_seen_timer, 30, recent_known_face_seen), 
+                            # (recent_face_seen_timer, 'C', recent_face_seen),
+                        # ]
+            # for timer, maxvalue, recentvar in timertuples:
+                # timer += refresh_rate
+                # if timer > maxvalue:
+                    # recentvar = 0
+                    
             recent_known_face_seen_timer += refresh_rate
             recent_face_seen_timer += refresh_rate
             recent_cube_tapped_timer += refresh_rate
