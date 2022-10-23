@@ -1450,13 +1450,14 @@ def reanimator_thread():
             cointoss = random.randint(1, 100)
             if reanimator_debug and not reduced_logging:
                 msg="[ranmtr] roll the dice: "+str(cointoss)
+                log.put(msg)
             if cointoss <= go_look_around_chance:
                 robot_look_around()
             if cointoss > go_look_around_chance and cointoss < go_animate_chance:
                 robot_mix_animations()
             if cointoss >= go_animate_chance and cointoss <= (go_animate_chance + go_drive_chance):
-                #robot_random_drive() 
-                robot_pop_wheelie()
+                robot_random_drive() 
+                #robot_pop_wheelie()
             if cointoss > (100-go_cube_chance):
                 if rollable_cube == 1:
                     cointoss = random.randint(1, 100)
@@ -2721,13 +2722,11 @@ while True:
                     myrobot_batlevel.color = ui_color_2
                     voltage_display_value = 100 
                 robot_batlevel_old = robot_batlevel
-            if robot_charging != robot_charging_old:
-                myrobot_charging.value = bool_to_value(robot_charging)
-                robot_charging_old = robot_charging
+            # charging
+            myrobot_charging.value = bool_to_value(robot_charging)
+            myrobot_docked.value = bool_to_value(robot_docked)
+            myrobot_calmpower.value = bool_to_value(robot_calmpower)
             if robot_docked:
-                if robot_docked != robot_docked_old:
-                    myrobot_docked.value = bool_to_value(robot_docked)
-                    robot_docked_old = robot_docked
                 voltage_display_color = ui_color_4
             myrobot_voltage.color = voltage_display_color
             myrobot_voltage.value = voltage_display_value
