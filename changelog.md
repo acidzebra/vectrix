@@ -2,6 +2,9 @@ Changelog
 
 note: earlier versions of VecTrix (named VectorDiag) are available here: https://gist.github.com/acidzebra/74d7b288b267d7fcea8c33358d4c2e78
 
+0.9.8-beta.1
+- (minor) small accelerometer calibration adjustment to enable on-dock recalibration
+
 0.9.7
 - (minor) connection thread improvements
 - (minor) additional error logging and handling
