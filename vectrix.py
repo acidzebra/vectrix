@@ -2492,8 +2492,8 @@ def input_thread():
                 debug_logging = not debug_logging
                 log.put("[inputs] debug_logging: "+str(debug_logging))
         if str(key) == "r":
-                reanimator_logging = not reanimator_logging
-                log.put("[inputs] reanimator_logging: "+str(reanimator_logging))
+                reanimator_debug = not reanimator_debug
+                log.put("[inputs] reanimator_debug: "+str(reanimator_debug))
         if str(key) == "b":
                 battery_logging = not battery_logging
                 log.put("[inputs] battery_logging: "+str(battery_logging))  
@@ -3532,6 +3532,9 @@ while True:
                     force_off_dock_failure = 0
     # VECTOR REANIMATOR, or how often does Vector sit still during an outing (and can we fix it)(yes we can)
             if not robot_docked and reanimator:
+                if (robot_moving or robot_driving) or manual_control == 1 or threadrunning == 1 or robot_performing_action or reanimator_thread_running == 1:
+                    vector_sit_still_total_time = 0
+                    vector_is_idle = 0
                 if robot_good_to_go:
                 #if not robot_cliffdetect and not robot_held and not robot_pickup and not robot_docked and reanimator_thread_running == 0:
                     if stillswitch == 1 and (robot_moving or robot_driving) and reanimator_thread_running == 0:
@@ -3543,7 +3546,7 @@ while True:
                                 msg = "[debugs] " + str(vector_name) + " has started moving again, inactivity for "+str("%.2f" % round(vector_sit_still_total_time,2))+" seconds"
                                 log.put(msg)
                             vector_sit_still_total_time = 0
-                    if (robot_moving or robot_driving):
+                    if (robot_moving or robot_driving) or manual_control == 1 or threadrunning == 1 or robot_performing_action or reanimator_thread_running == 1:
                         vector_sit_still_total_time = 0
                         vector_is_idle = 0
                     if reanimator_thread_running == 0 and startup == 0 and not (robot_moving or robot_driving):
