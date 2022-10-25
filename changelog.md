@@ -2,18 +2,33 @@ Changelog
 
 note: earlier versions of VecTrix (named VectorDiag) are available here: https://gist.github.com/acidzebra/74d7b288b267d7fcea8c33358d4c2e78
 
-0.9.8-beta.1
-- (minor) small accelerometer calibration adjustment to enable on-dock recalibration
+0.9.8-beta.2
+- added voice_debug switch for lazy behavior monitoring/debugging (Vector will announce reanimator actions)
+- minor routine optimizations, fixes
+- untangled exceptions vs normal debug statements
+- begun work on keyboard input (optional, needs library sshkeyboard installed), press H while program is running for help
+- currently keyboard input allows: remote control of robot, running all reanimator routines, leaving/returning to charger, changing UI color schemes
 
-0.9.7
-- (minor) connection thread improvements
-- (minor) additional error logging and handling
-- (minor) reworked some calculated values (extended rangefinder bar to 400mm)
-- (minor) fixes for faces, recency & dreaming routines
-- (minor) MQTT logging (for advanced users, not documented, if you know what MQTT is and use it, it's available, look in the code for the format. If you don't it's an irrelevant feature)
+0.9.8-beta.1
+- added pop wheelie and lift+move cube behaviors to reanimator (WIP)
+- minor fixes
+- logging improvements (mostly for debug purposes)
+- reduced calculation/formatting of display values when they are identical to last measurement
+
+0.9.7-beta.3
+- MQTT and CSV logging moved to logging thread
+- code cleanup
+
+0.9.7-beta.2
+- (minor) more error logging
 - (minor) use of room presence (advanced users, not documented, if you have some method of determining room presence that you can access from python you can send Vector off charger only when the room is occupied)
-- (minor) MQTT and CSV logging moved to logging thread
-- (minor) started work on graceful SIGTERM handling (mostly for headless mode)
+- (minor) cleanup, fixes, and cosmetics
+
+0.9.7-beta.1
+- (minor) reworked some calculated values (extended rangefinder bar to 400mm)
+- (minor) fixes for faces+recency, dreaming routines
+- (minor) MQTT logging (for advanced users, not documented, if you know what MQTT is and use it, it's available, look in the code for the format. If you don't it's an irrelevant feature)
+- (minor) start work on graceful SIGTERM handling (mostly for headless mode)
 - (minor) cleanup, fixes, and cosmetics
 
 0.9.6
