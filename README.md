@@ -16,6 +16,9 @@ This program was created to accomplish three things:
 - to enable keyboard remote control functionality you need sshkeyboard for Python: pip install sshkeyboard
 - to enable MQTT logging: you need a configured MQTT broker, some understanding of JSON, and PAHO: pip install paho-mqtt
 
+# Getting started
+after satisfying the requirements above and downloading the file: in vectrix.py, replace robot_serial found near the very top with your Vector's serial number. Optionally change any of the other settings to your liking. Run vectrix.py with Python. Have fun. 
+
 # Main features
 - built to run 24/7 in console UI or headless mode while using few resources
 - monitors and logs Vector's sensor data and other telemetry to console or file or webhooks (Discord etc)
