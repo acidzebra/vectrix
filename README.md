@@ -10,16 +10,22 @@ This program was created to accomplish three things:
 # Requirements
 - Windows, Mac, or Linux system
 - Python 3.x, configured [Vector Python SDK][1] and [Vector robot][2] (i.e. you can already connect to the robot with Python)
-- the [Dashing library][3] for Python: pip3 install dashing
+- the [Dashing library][3] for Python: pip install dashing
+
+# Optional requirements
+- to enable keyboard remote control functionality you need sshkeyboard for Python: pip install sshkeyboard
+- to enable MQTT logging: you need a configured MQTT broker, some understanding of JSON, and PAHO: pip install paho-mqtt
 
 # Main features
 - built to run 24/7 in console UI or headless mode while using few resources
 - monitors and logs Vector's sensor data and other telemetry to console or file or webhooks (Discord etc)
+- logging to screen, file, or webhook
+- ability to remote control Vector and initiate specific actions (pop wheelie, roll cube, etc)
+- battery profiling: log voltages to csv file, records charge/discharge cycle times
 - optionally forces Vector off the charger if the battery is fully charged (after a configurable time, and on a schedule if desired)
 - optionally improves Vector's tendency to sit still for minutes through Reanimator, which will mix animations, go for a drive, roll cubes and more
-- battery profiling: log voltages to csv file, records charge/discharge cycle times
 - automatically reconnects in case of connection loss
-- highly configurable
+- highly configurable (yet sane defaults, only required setting is the robot serial number)
 
 # Safety notice
 While I take care not to program features that will send Vector careening over a ledge, there are many unexpected events that can happen to Vector even without this software. I have my Vectors contained in a fairly large play space with raised walls. If you are using the Reanimator feature (on by default), don't leave your Vector unsupervised or in a place where a fall might cause damage.
