@@ -2,6 +2,9 @@ Changelog
 
 note: earlier versions of VecTrix (named VectorDiag) are available here: https://gist.github.com/acidzebra/74d7b288b267d7fcea8c33358d4c2e78
 
+0.9.8-beta.3
+- fixes and cleanup
+
 0.9.8-beta.2
 - added voice_debug switch for lazy behavior monitoring/debugging (Vector will announce reanimator actions)
 - minor routine optimizations, fixes

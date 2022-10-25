@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-vt_version = "0.9.8-beta.2"
+vt_version = "0.9.8-beta.3"
 # --- START OF CONFIG AND INFO SECTION ---
 # --- In which we let you set preferences ---
 #
@@ -1111,7 +1111,7 @@ def robot_event_thread():
     global log
     global robot_event_thread_running, robot_events_ready
     global robot_connected, robot_connection_error
-    global last_event_received
+    global last_event_received, object_logging
     robot_events_ready = 0
     while init_complete < 1:
         sleep(refresh_rate)
@@ -1264,6 +1264,7 @@ def robot_event_thread():
         myrobot.events.subscribe(on_robot_object_stopped_moving, Events.object_stopped_moving, evt)
     # robot state
     myrobot.events.subscribe(on_robot_state, Events.robot_state, evt)
+    #object_logging = object_logging_old
     while True:
         try:
             last_event_received = last_event_received + (refresh_rate/2)
@@ -1273,7 +1274,16 @@ def robot_event_thread():
                 robot_connected = 0
                 robot_connection_error = 1
                 last_event_received = 0
-                
+            # if object_logging != object_logging_old:
+                # if object_logging:
+                    # myrobot.events.subscribe(on_robot_object_disappeared, Events.object_disappeared, evt)
+                    # myrobot.events.subscribe(on_robot_object_appeared, Events.object_appeared, evt)
+                    # myrobot.events.subscribe(on_robot_object_observed, Events.object_observed, evt)
+                # else:
+                    # myrobot.events.unsubscribe(on_robot_object_disappeared, Events.object_disappeared)
+                    # myrobot.events.unsubscribe(on_robot_object_appeared, Events.object_appeared)
+                    # myrobot.events.unsubscribe(on_robot_object_observed, Events.object_observed)
+                # object_logging = object_logging_old
             if robot_event_thread_stop == 1:
                 try:
                     if face_logging:
@@ -1457,6 +1467,7 @@ def reanimator_thread():
         global myrobot
         global robot_control_blocking
         global reanimator_thread_running
+        global reanimator_debug
         reanimator_thread_running = 1
         prox_array           = []
         robot_go_animate     = 0
@@ -2478,271 +2489,273 @@ def input_thread():
         global robot_connected, myrobot, log
         global ui_color_0, ui_color_1, ui_color_2, ui_color_3, ui_color_4, ui_color_5, ui_color_6, ui_color_7
         global debug_logging, debugtoggle, robot_control_blocking
-        global reanimator_debug, battery_logging, object_logging
+        global battery_logging, object_logging, reanimator_debug
         global robot_command, controltoggle, manual_control
         global leavechargerrequest, robot_performing_action, getonchargerrequest
         return_charger_future = ""
-        if str(key) == "h":
-            log.put("[inputs] PRESS ESCAPE TO QUIT. PRESS F1-F6 TO SELECT COLOR SCHEME")
-            log.put("[inputs] PRESS D, R, B, O TO TOGGLE DEBUG, REANIMATOR, BATTERY, OBJECT LOGGING")
-            log.put("[inputs] PRESS 1-5 FOR ANIMATION MIX, RANDOM DRIVE, ROLL CUBE, PICK UP CUBE, POP WHEELIE")
-            log.put("[inputs] PRESS C TO REQUEST/RELEASE MANUAL CONTROL. PRESS 9 TO RETURN TO CHARGER. PRESS 0 TO LEAVE CHARGER")
-            log.put("[inputs] (IN MANUAL CONTROL ONLY) USE ARROW KEYS TO MOVE. Q&A TO MOVE LIFT. W&S TO MOVE HEAD. E CHANGES EYE COLOR")
-        if str(key) == "d":
-                debug_logging = not debug_logging
-                log.put("[inputs] debug_logging: "+str(debug_logging))
-        if str(key) == "r":
-                reanimator_debug = not reanimator_debug
-                log.put("[inputs] reanimator_debug: "+str(reanimator_debug))
-        if str(key) == "b":
-                battery_logging = not battery_logging
-                log.put("[inputs] battery_logging: "+str(battery_logging))  
-        if str(key) == "o":
-                object_logging = not object_logging
-                log.put("[inputs] object_logging: "+str(object_logging)) 
-        if str(key) == "c" and robot_connected and robot_good_to_go:
-            if controltoggle == 1:
-                log.put("[inputs] requesting manual control")
-                manual_control = 1
-                controltoggle = 0
-                manual_robot_control()
-            else:
-                log.put("[inputs] releasing manual control")
-                manual_control = 0
-                controltoggle = 1
-        elif str(key) == "c" and (not robot_connected or not robot_good_to_go):
-            log.put("[inputs] cannot enable manual control; robot state out of scope")
-        if manual_control == 1:
-            if str(key) == "up":
-                robot_command = "forward"
-            if str(key) == "down":
-                robot_command = "backward"
-            if str(key) == "left":
-                robot_command = "turnleft" 
-            if str(key) == "right":
-                robot_command = "turnright"
-            if str(key) == "q":
-                robot_command = "liftup"
-            if str(key) == "a":
-                robot_command = "liftdown"
-            if str(key) == "w":
-                robot_command = "headup"
-            if str(key) == "s":
-                robot_command = "headdown"
-            if str(key) == "e":
-                robot_command = "eyecolor"
-        if robot_good_to_go and not robot_performing_action and manual_control == 0 and robot_control_blocking == 0:
-            if str(key) == "1":
-                robot_performing_action = True
-                robot_control_blocking = 1
-                robot_command = "animationmix"
-                log.put("[inputs] requested animation mix")
-                robot_mix_animations()
-                robot_performing_action = False
-                robot_control_blocking = 0
-                log.put("[inputs] request completed")
-            if str(key) == "2":
-                robot_performing_action = True
-                robot_control_blocking = 1
-                robot_command = "drive"
-                log.put("[inputs] requested drive")
-                robot_random_drive()
-                robot_performing_action = False
-                robot_control_blocking = 0
-                log.put("[inputs] request completed")
-            if str(key) == "3" and myrobot.world.light_cube:
-                robot_performing_action = True
-                robot_control_blocking = 1
-                robot_command = "rollcube" 
-                log.put("[inputs] requested roll cube")
-                robot_roll_cube()
-                robot_performing_action = False
-                robot_control_blocking = 0
-                log.put("[inputs] request completed")
-            if str(key) == "4" and myrobot.world.light_cube:
-                robot_performing_action = True
-                robot_control_blocking = 1
-                robot_command = "liftcube"
-                log.put("[inputs] requested pick up cube")
-                robot_pick_up_cube()
-                robot_performing_action = False
-                robot_control_blocking = 0
-                log.put("[inputs] request completed")
-            if str(key) == "5" and myrobot.world.light_cube:
-                robot_performing_action = True
-                robot_control_blocking = 1
-                robot_command = "popwheelie"
-                log.put("[inputs] requested pop wheelie")
-                robot_pop_wheelie()
-                robot_performing_action = False
-                robot_control_blocking = 0
-                log.put("[inputs] request completed")
-        elif (str(key) == "1" or str(key) == "2" or str(key) == "3" or str(key) == "4" or str(key) == "5") and (robot_performing_action or manual_control == 1 or robot_control_blocking == 1 or not robot_good_to_go):
-            if robot_performing_action:
-                log.put("[inputs] already performing an action, try again later")
+        try:
+            if str(key) == "h":
+                log.put("[inputs] PRESS ESCAPE TO QUIT. PRESS F1-F6 TO SELECT COLOR SCHEME")
+                log.put("[inputs] PRESS D, R, B TO TOGGLE LOGGING FOR: DEBUG, REANIMATOR, BATTERY")
+                log.put("[inputs] PRESS 1-5 FOR: ANIMATION MIX, RANDOM DRIVE, ROLL CUBE, PICK UP CUBE, POP WHEELIE")
+                log.put("[inputs] PRESS C TO REQUEST/RELEASE MANUAL CONTROL. PRESS 9 TO RETURN TO CHARGER. PRESS 0 TO LEAVE CHARGER")
+                log.put("[inputs] (IN MANUAL CONTROL ONLY) USE ARROW KEYS TO MOVE. Q&A TO MOVE LIFT. W&S TO MOVE HEAD. E CHANGES EYE COLOR")
+            if str(key) == "d":
+                    debug_logging = not debug_logging
+                    log.put("[inputs] debug_logging: "+str(debug_logging))
+            if str(key) == "r":
+                    reanimator_debug = not reanimator_debug
+                    log.put("[inputs] reanimator_debug: "+str(reanimator_debug))
+            if str(key) == "b":
+                    battery_logging = not battery_logging
+                    log.put("[inputs] battery_logging: "+str(battery_logging))  
+            if str(key) == "c" and robot_connected and robot_good_to_go:
+                if controltoggle == 1:
+                    log.put("[inputs] requesting manual control")
+                    manual_control = 1
+                    controltoggle = 0
+                    manual_robot_control()
+                else:
+                    log.put("[inputs] releasing manual control")
+                    manual_control = 0
+                    controltoggle = 1
+            elif str(key) == "c" and (not robot_connected or not robot_good_to_go):
+                log.put("[inputs] cannot enable manual control; robot state out of scope")
             if manual_control == 1:
-                log.put("[inputs] unable to perform action while under manual control, release control first")
-            if robot_control_blocking == 1:
-                log.put("[inputs] unable to perform action while reanimator has control, try again later")
-            if not robot_good_to_go:
-                log.put("[inputs] cannot perform action in current robot state, try again later")
-            if (str(key) == "3" or str(key) == "4" or str(key) == "5") and not myrobot.world.light_cube:
-                log.put("[inputs] unable to perform action as not aware of cube, try again later")
-        # leave charger
-        if str(key) == "0" and manual_control == 0 and robot_docked and robot_connected == 1 and leavechargerrequest == 0 and not robot_performing_action:
-            leavechargerrequest = 1
-            robot_control_blocking = 1
-            robot_performing_action = True
-            robot_command = "leavecharger"
-            log.put("[inputs] requested leave charger")
-            request = robot_control_request(1,True)
-            sleep(3)
-            if not robot_current_control_level == None:
-                myrobot.motors.set_wheel_motors(0, 0)
-                sleep(0.2)
-                myrobot.motors.set_wheel_motors(25, 25)
-                sleep(4.5)
-                myrobot.motors.stop_all_motors()
-            request = robot_control_request(0,False)
-            leavechargerrequest = 0
-            robot_performing_action = False
-            robot_control_blocking = 0
-        elif str(key) == "0" and (manual_control == 1 or not robot_docked or robot_connected == 0 or leavechargerrequest == 1 or robot_performing_action):
-            if manual_control == 1:
-                log.put("[inputs] manual control is active, release control first")
-            if not robot_docked:
-                log.put("[inputs] requesting to leave charger but robot is not docked!")
-            if robot_performing_action:
-                log.put("[inputs] another action is currently in progress, try again later")
-            if robot_connected == 0:
-                log.put("[inputs] unable to request, robot is not connected")
-        if str(key) == "9" and manual_control == 0 and not robot_docked and robot_good_to_go and myrobot.world.charger and getonchargerrequest == 0 and not robot_performing_action and robot_connected == 1:
-            getonchargerrequest = 1
-            robot_performing_action = True
-            robot_control_blocking = 1
-            log.put("[inputs] requested return to charger")
-            request = robot_control_request(1,True)
-            sleep(2)
-            if not robot_current_control_level == None:
-                log.put("[inputs] actioning return to charger")
-                if voice_debug:
-                    say_future = myrobot.behavior.say_text("returning to charger!")
-                return_charger_future = myrobot.behavior.drive_on_charger()
-                timeout = 0
-                while str(return_charger_future).find("pending") != -1:
-                    sleep(refresh_rate)
-                    timeout += refresh_rate
-                    if not robot_good_to_go:
-                        break
-                    if program_exit_requested == 1:
-                        break
-                    if timeout > 60:
-                        log.put("[inputs] timeout returning to charger")
-                        if voice_debug:
-                            say_future = myrobot.behavior.say_text("timeout while returning to charger!")
-                        break
-            else:
-                log.put("[inputs] failed to request control")
-            if return_charger_future:
-                return_charger_future.cancel()
-            request = robot_control_request(0,False)
-            robot_performing_action = False
-            robot_control_blocking = 0
-            getonchargerrequest = 0
-            if robot_docked:
-                log.put("[inputs] return to charger success")
-            else:
-                log.put("[inputs] failed to return to charger")
-        elif str(key) == "9" and (manual_control == 1 or robot_docked or not robot_good_to_go or not myrobot.world.charger or robot_performing_action or robot_connected == 0):
-            if manual_control == 1:
-                log.put("[inputs] unable to return to charger while under manual control, release control first")
-            if robot_docked:
-                log.put("[inputs] requesting dock with charger but robot is already docked!")
-            if not robot_good_to_go:
-                log.put("[inputs] unable to return to charger, robot state out of scope, try again later")
-            if not myrobot.world.charger:
-                log.put("[inputs] unable to return to charger, charger location unknown, try again later")
-            if robot_performing_action:
-                log.put("[inputs] another action is currently in progress, try again later")
-            if robot_connected == 0:
-                log.put("[inputs] unable to request, robot is not connected")
-        #0=black,1=red,2=green,3=yellow,4=blue,5=magenta,6=cyan,7=white
-        if str(key) == "f1":
-            log.put("[inputs] color scheme: default")
-            ui_color_0                   = 0
-            ui_color_1                   = 1
-            ui_color_2                   = 2
-            ui_color_3                   = 3
-            ui_color_4                   = 4
-            ui_color_5                   = 5
-            ui_color_6                   = 6
-            ui_color_7                   = 7
-            refresh_ui_colors()
-        if str(key) == "f2":
-            log.put("[inputs] color scheme: mono white")
-            ui_color_0                   = 0
-            ui_color_1                   = 7
-            ui_color_2                   = 7
-            ui_color_3                   = 7
-            ui_color_4                   = 7
-            ui_color_5                   = 7
-            ui_color_6                   = 7
-            ui_color_7                   = 7
-            refresh_ui_colors()
-        if str(key) == "f3":
-            log.put("[inputs] color scheme: red and blue")
-            ui_color_0                   = 0
-            ui_color_1                   = 5
-            ui_color_2                   = 1
-            ui_color_3                   = 4
-            ui_color_4                   = 4
-            ui_color_5                   = 4
-            ui_color_6                   = 1
-            ui_color_7                   = 5
-            refresh_ui_colors()
-        if str(key) == "f4":
-            log.put("[inputs] color scheme: CGA")
-            ui_color_0                   = 0
-            ui_color_1                   = 6
-            ui_color_2                   = 6
-            ui_color_3                   = 5
-            ui_color_4                   = 6
-            ui_color_5                   = 5
-            ui_color_6                   = 7
-            ui_color_7                   = 7
-            refresh_ui_colors()
-        if str(key) == "f5":
-            log.put("[inputs] color scheme: borderless mono green")
-            ui_color_0                   = 0
-            ui_color_1                   = 2
-            ui_color_2                   = 2
-            ui_color_3                   = 0
-            ui_color_4                   = 0
-            ui_color_5                   = 0
-            ui_color_6                   = 2
-            ui_color_7                   = 2
-            refresh_ui_colors()
-        if str(key) == "f6":
-            log.put("[inputs] color scheme: mono green")
-            ui_color_0                   = 0
-            ui_color_1                   = 2
-            ui_color_2                   = 2
-            ui_color_3                   = 2
-            ui_color_4                   = 2
-            ui_color_5                   = 2
-            ui_color_6                   = 2
-            ui_color_7                   = 2
-            refresh_ui_colors()
+                if str(key) == "up":
+                    robot_command = "forward"
+                if str(key) == "down":
+                    robot_command = "backward"
+                if str(key) == "left":
+                    robot_command = "turnleft" 
+                if str(key) == "right":
+                    robot_command = "turnright"
+                if str(key) == "q":
+                    robot_command = "liftup"
+                if str(key) == "a":
+                    robot_command = "liftdown"
+                if str(key) == "w":
+                    robot_command = "headup"
+                if str(key) == "s":
+                    robot_command = "headdown"
+                if str(key) == "e":
+                    robot_command = "eyecolor"
+            if robot_good_to_go and not robot_performing_action and manual_control == 0 and robot_control_blocking == 0 and robot_connected == 1:
+                if str(key) == "1":
+                    robot_performing_action = True
+                    robot_control_blocking = 1
+                    robot_command = "animationmix"
+                    log.put("[inputs] requested animation mix")
+                    robot_mix_animations()
+                    robot_performing_action = False
+                    robot_control_blocking = 0
+                    log.put("[inputs] request completed")
+                if str(key) == "2":
+                    robot_performing_action = True
+                    robot_control_blocking = 1
+                    robot_command = "drive"
+                    log.put("[inputs] requested drive")
+                    robot_random_drive()
+                    robot_performing_action = False
+                    robot_control_blocking = 0
+                    log.put("[inputs] request completed")
+                if str(key) == "3" and myrobot.world.light_cube:
+                    robot_performing_action = True
+                    robot_control_blocking = 1
+                    robot_command = "rollcube" 
+                    log.put("[inputs] requested roll cube")
+                    robot_roll_cube()
+                    robot_performing_action = False
+                    robot_control_blocking = 0
+                    log.put("[inputs] request completed")
+                if str(key) == "4" and myrobot.world.light_cube:
+                    robot_performing_action = True
+                    robot_control_blocking = 1
+                    robot_command = "liftcube"
+                    log.put("[inputs] requested pick up cube")
+                    robot_pick_up_cube()
+                    robot_performing_action = False
+                    robot_control_blocking = 0
+                    log.put("[inputs] request completed")
+                if str(key) == "5" and myrobot.world.light_cube:
+                    robot_performing_action = True
+                    robot_control_blocking = 1
+                    robot_command = "popwheelie"
+                    log.put("[inputs] requested pop wheelie")
+                    robot_pop_wheelie()
+                    robot_performing_action = False
+                    robot_control_blocking = 0
+                    log.put("[inputs] request completed")
+            elif (str(key) == "1" or str(key) == "2" or str(key) == "3" or str(key) == "4" or str(key) == "5") and (robot_performing_action or manual_control == 1 or robot_control_blocking == 1 or not robot_good_to_go):
+                if robot_performing_action or robot_control_blocking == 1:
+                    log.put("[inputs] already performing an action, try again later")
+                if manual_control == 1:
+                    log.put("[inputs] unable to perform action while under manual control, release control first")
+                if not robot_good_to_go:
+                    log.put("[inputs] cannot perform action in current robot state, try again later")
+                if (str(key) == "3" or str(key) == "4" or str(key) == "5") and not myrobot.world.light_cube:
+                    log.put("[inputs] unable to perform action as not aware of cube, try again later")
+            # leave charger
+            if str(key) == "0" and manual_control == 0 and robot_docked and robot_connected == 1 and leavechargerrequest == 0 and not robot_performing_action and robot_control_blocking == 0 and robot_connected == 1:
+                leavechargerrequest = 1
+                robot_control_blocking = 1
+                robot_performing_action = True
+                robot_command = "leavecharger"
+                log.put("[inputs] requested leave charger")
+                request = robot_control_request(1,True)
+                sleep(3)
+                if not robot_current_control_level == None:
+                    myrobot.motors.set_wheel_motors(0, 0)
+                    sleep(0.2)
+                    myrobot.motors.set_wheel_motors(25, 25)
+                    sleep(4.5)
+                    myrobot.motors.stop_all_motors()
+                request = robot_control_request(0,False)
+                leavechargerrequest = 0
+                robot_performing_action = False
+                robot_control_blocking = 0
+            elif str(key) == "0" and (manual_control == 1 or not robot_docked or robot_connected == 0 or leavechargerrequest == 1 or robot_performing_action or robot_control_blocking == 1):
+                if manual_control == 1:
+                    log.put("[inputs] manual control is active, release control first")
+                if not robot_docked:
+                    log.put("[inputs] requesting to leave charger but robot is not docked!")
+                if robot_performing_action or robot_control_blocking:
+                    log.put("[inputs] another action is currently in progress, try again later")
+                if robot_connected == 0:
+                    log.put("[inputs] unable to request, robot is not connected")
+            if str(key) == "9" and manual_control == 0 and not robot_docked and robot_good_to_go and myrobot.world.charger and getonchargerrequest == 0 and not robot_performing_action and robot_connected == 1 and robot_control_blocking == 0:
+                getonchargerrequest = 1
+                robot_performing_action = True
+                robot_control_blocking = 1
+                log.put("[inputs] requested return to charger")
+                request = robot_control_request(1,True)
+                sleep(2)
+                if not robot_current_control_level == None:
+                    log.put("[inputs] actioning return to charger")
+                    if voice_debug:
+                        say_future = myrobot.behavior.say_text("returning to charger!")
+                    return_charger_future = myrobot.behavior.drive_on_charger()
+                    timeout = 0
+                    while str(return_charger_future).find("pending") != -1:
+                        sleep(refresh_rate)
+                        timeout += refresh_rate
+                        if not robot_good_to_go:
+                            break
+                        if program_exit_requested == 1:
+                            break
+                        if timeout > 60:
+                            log.put("[inputs] timeout returning to charger")
+                            if voice_debug:
+                                say_future = myrobot.behavior.say_text("timeout while returning to charger!")
+                            break
+                else:
+                    log.put("[inputs] failed to request control")
+                if return_charger_future:
+                    return_charger_future.cancel()
+                request = robot_control_request(0,False)
+                robot_performing_action = False
+                robot_control_blocking = 0
+                getonchargerrequest = 0
+                if robot_docked:
+                    log.put("[inputs] return to charger success")
+                else:
+                    log.put("[inputs] failed to return to charger")
+            elif str(key) == "9" and (manual_control == 1 or robot_docked or not robot_good_to_go or not myrobot.world.charger or robot_performing_action or robot_connected == 0 or robot_control_blocking == 0):
+                if manual_control == 1:
+                    log.put("[inputs] unable to return to charger while under manual control, release control first")
+                if robot_docked:
+                    log.put("[inputs] requesting dock with charger but robot is already docked!")
+                if not robot_good_to_go:
+                    log.put("[inputs] unable to return to charger, robot state out of scope, try again later")
+                if not myrobot.world.charger:
+                    log.put("[inputs] unable to return to charger, charger location unknown, try again later")
+                if robot_performing_action or robot_control_blocking == 1:
+                    log.put("[inputs] another action is currently in progress, try again later")
+                if robot_connected == 0:
+                    log.put("[inputs] unable to request, robot is not connected")
+            #0=black,1=red,2=green,3=yellow,4=blue,5=magenta,6=cyan,7=white
+            if str(key) == "f1":
+                log.put("[inputs] color scheme: default")
+                ui_color_0                   = 0
+                ui_color_1                   = 1
+                ui_color_2                   = 2
+                ui_color_3                   = 3
+                ui_color_4                   = 4
+                ui_color_5                   = 5
+                ui_color_6                   = 6
+                ui_color_7                   = 7
+                refresh_ui_colors()
+            if str(key) == "f2":
+                log.put("[inputs] color scheme: mono white")
+                ui_color_0                   = 0
+                ui_color_1                   = 7
+                ui_color_2                   = 7
+                ui_color_3                   = 7
+                ui_color_4                   = 7
+                ui_color_5                   = 7
+                ui_color_6                   = 7
+                ui_color_7                   = 7
+                refresh_ui_colors()
+            if str(key) == "f3":
+                log.put("[inputs] color scheme: red and blue")
+                ui_color_0                   = 0
+                ui_color_1                   = 5
+                ui_color_2                   = 1
+                ui_color_3                   = 4
+                ui_color_4                   = 4
+                ui_color_5                   = 4
+                ui_color_6                   = 1
+                ui_color_7                   = 5
+                refresh_ui_colors()
+            if str(key) == "f4":
+                log.put("[inputs] color scheme: CGA")
+                ui_color_0                   = 0
+                ui_color_1                   = 6
+                ui_color_2                   = 6
+                ui_color_3                   = 5
+                ui_color_4                   = 6
+                ui_color_5                   = 5
+                ui_color_6                   = 7
+                ui_color_7                   = 7
+                refresh_ui_colors()
+            if str(key) == "f5":
+                log.put("[inputs] color scheme: borderless mono green")
+                ui_color_0                   = 0
+                ui_color_1                   = 2
+                ui_color_2                   = 2
+                ui_color_3                   = 0
+                ui_color_4                   = 0
+                ui_color_5                   = 0
+                ui_color_6                   = 2
+                ui_color_7                   = 2
+                refresh_ui_colors()
+            if str(key) == "f6":
+                log.put("[inputs] color scheme: mono green")
+                ui_color_0                   = 0
+                ui_color_1                   = 2
+                ui_color_2                   = 2
+                ui_color_3                   = 2
+                ui_color_4                   = 2
+                ui_color_5                   = 2
+                ui_color_6                   = 2
+                ui_color_7                   = 2
+                refresh_ui_colors()
+        except Exception as e:
+            log.put("[system] input_thread error: " + repr(e))
     def release(key):
         global robot_command
         robot_command = "stop"
     while program_exit_requested == 0:
-        listen_keyboard(
-            on_press=press,
-            on_release=release,
-        )
-        log.put("[inputs] input_thread: escape key pressed, exiting program, this can take up to 10 seconds")
-        break
+        try:
+            listen_keyboard(
+                on_press=press,
+                on_release=release,
+            )
+            log.put("[inputs] input_thread: escape key pressed, exiting program, this can take up to 10 seconds")
+            break
+        except Exception as e:
+            if except_logging:
+                log.put("[system] input_thread error: " + repr(e))
     program_exit_requested = 1
     manual_control = 0
     input_thread_running = 0
@@ -2831,37 +2844,42 @@ def manual_robot_control():
     if rainbow_eyes:
         myrobot.behavior.set_eye_color(eye_hue_purple,1)
     while robot_good_to_go and manual_control == 1 and program_exit_requested == 0:
-        if robot_command == "stop":
-            #myrobot.motors.stop_all_motors()
-            myrobot.motors.set_lift_motor(0)
-            myrobot.motors.set_head_motor(0)
-            myrobot.motors.set_wheel_motors(0, 0)
-            wheelspeed = 25
-        if robot_command == "forward":
-            myrobot.motors.set_wheel_motors(wheelspeed, wheelspeed)
-            wheelspeed += 3
-        if robot_command == "backward":
-            myrobot.motors.set_wheel_motors(-wheelspeed, -wheelspeed)
-            wheelspeed += 3
-        if robot_command == "turnleft":
-            myrobot.motors.set_wheel_motors(-wheelspeed, wheelspeed)
-            wheelspeed += 3
-        if robot_command == "turnright":
-            myrobot.motors.set_wheel_motors(wheelspeed, -wheelspeed)
-            wheelspeed += 3
-        if robot_command == "liftup":
-            myrobot.motors.set_lift_motor(1)
-        if robot_command == "liftdown":
-            myrobot.motors.set_lift_motor(-1)
-        if robot_command == "headup":
-            myrobot.motors.set_head_motor(0.5)
-        if robot_command == "headdown":
-            myrobot.motors.set_head_motor(-0.5)
-        if robot_command == "eyecolor":
-            myrobot.behavior.set_eye_color(randomcolor,1)
-            randomcolor += 0.01
-            if randomcolor > 1:
-                randomcolor = 0
+        try:
+            if robot_command == "stop":
+                #myrobot.motors.stop_all_motors()
+                myrobot.motors.set_lift_motor(0)
+                myrobot.motors.set_head_motor(0)
+                myrobot.motors.set_wheel_motors(0, 0)
+                sleep(0.2)
+                wheelspeed = 25
+            if robot_command == "forward":
+                myrobot.motors.set_wheel_motors(wheelspeed, wheelspeed)
+                wheelspeed += 3
+            if robot_command == "backward":
+                myrobot.motors.set_wheel_motors(-wheelspeed, -wheelspeed)
+                wheelspeed += 3
+            if robot_command == "turnleft":
+                myrobot.motors.set_wheel_motors(-wheelspeed, wheelspeed)
+                wheelspeed += 3
+            if robot_command == "turnright":
+                myrobot.motors.set_wheel_motors(wheelspeed, -wheelspeed)
+                wheelspeed += 3
+            if robot_command == "liftup":
+                myrobot.motors.set_lift_motor(1)
+            if robot_command == "liftdown":
+                myrobot.motors.set_lift_motor(-1)
+            if robot_command == "headup":
+                myrobot.motors.set_head_motor(0.5)
+            if robot_command == "headdown":
+                myrobot.motors.set_head_motor(-0.5)
+            if robot_command == "eyecolor":
+                myrobot.behavior.set_eye_color(randomcolor,1)
+                randomcolor += 0.01
+                if randomcolor > 1:
+                    randomcolor = 0
+        except Exception as e:
+            if except_logging:
+                log.put("[system] input_thread error: " + repr(e))
         if program_exit_requested == 1:
             break
         sleep(refresh_rate)
