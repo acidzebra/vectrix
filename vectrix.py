@@ -2478,7 +2478,7 @@ def input_thread():
         global robot_connected, myrobot, log
         global ui_color_0, ui_color_1, ui_color_2, ui_color_3, ui_color_4, ui_color_5, ui_color_6, ui_color_7
         global debug_logging, debugtoggle, robot_control_blocking
-        global reanimator_logging, battery_logging, object_logging
+        global reanimator_debug, battery_logging, object_logging
         global robot_command, controltoggle, manual_control
         global leavechargerrequest, robot_performing_action, getonchargerrequest
         return_charger_future = ""
