@@ -1,52 +1,30 @@
 #!/usr/bin/env python3
-vt_version = "0.9.8-beta.2"
+vt_version = "0.9.8"
 # --- START OF CONFIG AND INFO SECTION ---
 # --- In which we let you set preferences ---
 #
 # ROBOT SERIAL NUMBER, YOU NEED TO EDIT THIS AND REPLACE WITH YOUR ROBOT'S SERIAL NUMBER
 robot_serial = "00902b5d"
-
-# bluey = anki_vector.Robot("00301a24")  K5H9
-# greeny = anki_vector.Robot("00902b5d") C9T7
-# violet = anki_vector.Robot("007026b7") V4H1
-
-if robot_serial == "00301a24":
-    vector_name                  = "Bluey"
-    logfile                      = "blue.txt"
-    battery_csv_filename         = "blue.csv"
-    discord_prefix               = ":robot::blue_square:"
-    MQTT_TOPIC                   = "VectorStatusBlue" 
-if robot_serial == "00902b5d":
-    vector_name                  = "Greensy"
-    logfile                      = "green.txt"
-    battery_csv_filename         = "green.csv"
-    discord_prefix               = ":robot::green_square:"
-    MQTT_TOPIC                   = "VectorStatusGreen" 
-if robot_serial == "007026b7":
-    vector_name                  = "Violet"
-    logfile                      = "purple.txt"
-    battery_csv_filename         = "purple.csv"
-    discord_prefix               = ":robot::purple_square:"
-    MQTT_TOPIC                   = "VectorStatusPurple" 
 #
-# SO MANY SWITCHES, DEFAULTS ARE FINE, CHANGE AS DESIRED
-#vector_name                  = "Bluey"                # vector_name will be used in most log entries for a more personalized log
+# MANY SWITCHES, DEFAULTS ARE FINE, CHANGE AS DESIRED
+vector_name                  = "Vector"                 # vector_name will be used in most log entries for a more personalized log
 refresh_rate                 = 0.1                      # time in seconds to wait before program refreshes UI. Sane values are somewhere between 0.1 and 2. Too fast might crash Vector (=needs reboot), too slow makes this program useless, default value 0.1
 headless                     = False                    # whether headless mode (=no UI) is enabled, default is False
 passive_monitoring_only      = False                    # if enabled will override and disable file logging (CSV and normal), Reanimator, and continuous cycle no matter what options you set below, default is False
+reduced_logging              = False                    # will modify other logging options set below to only include "important" log messages, decided by me on a purely subjective basis, default is False
+keyboard_control             = False                    # allows use of various keyboard shortcuts (WIP), requires installing sshkeyboard: "pip install sshkeyboard", default is False
 # optional logging switches, the defaults are usually fine, change as suits you. Accepted values are described in comments. Don't turn everything on, it will make the program useless and slow.
-reduced_logging              = False                    # will modify the logging switches below to only log "significant" messages (as subjectively decided by me)
 header_logging               = True                     # whether to log startup info about Vectrix and Vector (version, IP, refresh rate, etc), default = True
 connect_logging              = True                     # logs connection and disconnection events, default is True
 speech_logging               = True                     # logs wake word and user intent (but user intent currently not working), default is True 
-charge_cycle_logging         = True                     # logs duration of charge and discharge cycles, default is True
 dock_events_logging          = True                     # logs events like getting on/off charger and continuous cycle info, default is True
+charge_cycle_logging         = True                     # logs duration of charge and discharge cycles, default is True
 sensors_logging              = True                     # logs various sensors firing, default is True
 actions_logging              = True                     # logs various actions carried out, default is True
-cube_logging                 = True                     # logs specific cube events (tapping, rotating) but only when cube is connected, default is False
 face_logging                 = True                     # logs face detection, can be a bit spammy, default is False
-cube_powersaver              = True                     # if enabled, will disconnect the cube when it becomes available (experimental and possibly useless), default is False
-connect_to_cube              = False                    # will try to connect to an available cube, default is False
+cube_logging                 = True                     # logs specific cube events (tapping, rotating) but only when cube is connected, default is False
+cube_powersaver              = True                     # if enabled, will disconnect the cube when it becomes available (experimental and possibly useless), default is True
+connect_to_cube              = False                    # will try to connect to an available cube on startup, incompatible with cube_powersaver, default is False
 object_logging               = False                    # logs object appearances, spammy, default is False
 object_logging_while_low_bat = False                    # temporarily turns on object logging while looking for the charger, spammy while active, default is False
 misc_logging                 = False                    # logs some navmap and other stuff, less interesting than it sounds tbh, spammy, default is False
@@ -61,41 +39,41 @@ rangefinder_logging_interval = 1                        # how often rangefinder 
 accelgyro_logging_interval   = 1                        #  how often accel/gyro values get logged in seconds if enabled, default is 1 
 # switches currently in testing (may cause hangs and other world-ending events)
 continuous_cycle             = True                     # if enabled will attempt to send Vector off charger as soon as battery is charged by requesting control and issuing a command, this is pretty flaky, use at own risk, default is False. 
-continuous_cycle_scheduling  = True                     # whether continuous cycle should only run between certain hours, default is False (=run at all hours)
+continuous_cycle_scheduling  = False                    # whether continuous cycle should only run between certain hours, default is False (=run at all hours)
 continuous_cycle_wait_time   = 120                      # how long to wait after battery is full in seconds before attempting to force Vector off the dock, default is 120
-continuous_cycle_random      = 120                      # random offset (from 1 to the variable value) in seconds that gets added to wait time, default is 720
+continuous_cycle_random      = 180                      # random offset (random number between 1 and the value of this variable) in seconds that gets added to continuous_cycle_wait_time, default is 180
 continuous_cycle_earliest    = 9                        # won't start continuous cycle if the time is before... notation in 24h time, 9am by default
-continuous_cycle_latest      = 16                       # won't start continuous cycle if the time is after...  notation in 24h time, 5pm by default
+continuous_cycle_latest      = 17                       # won't start continuous cycle if the time is after...  notation in 24h time, 5pm by default
 # reanimator will activate if Vector is sitting still off-dock for more than [reanimator_timeout] seconds, and try to make Vector more entertaining
 reanimator                   = True                     # whether reanimator is enabled, default is True. If you want to disable specific animations, see anim_list
 reanimator_logging           = True                     # will log some details on what reanimator is doing, if you want more detail see the reanimator_debug flag elsewhere, default is True
-reanimator_combo_chance      = True                     # 10% chance of multiple reanimator actions if set to True (animate/drive/roll cube), default is True
+reanimator_combo_chance      = True                     # (NOT IMPLEMENTED) 10% chance of multiple reanimator actions if set to True (animate/drive/roll cube), default is True
 reanimator_beep              = True                     # when reanimator drives Vector up to a wall, Vector will back off slowly while going beep beep like Cozmo, set to True to disable, default is False
 reanimator_timeout           = 4.5                      # time in seconds Vector needs to be idle before engaging reanimator. Idle is defined as off-dock with OK battery and are_motors_moving and are_wheels_moving both set to False, default is 5
 reanimator_min_distance      = 100                      # minimum required free space in front of Vector before reanimator is free to go for a drive, default is 100
 reanimator_max_distance      = 300                      # max distance in mm that reanimator is allowed to drive before stopping, default is 200
 # file logging switches
-datestamp_log_files          = False                     # will create new log files each day with name [currentdate]+[filename] for logfile and battery csv log (if enabled), default = True
+datestamp_log_files          = True                     # will create new log files each day with name [currentdate]+[filename] for logfile and battery csv log (if enabled), default = True
 file_logging                 = True                     # whether log entries should also be written to file; if set to 1 a logfile  will be created (default name "vectrix.log"), config below, default is True
 battery_csv_logging          = False                    # will log voltage values in csv format to separate CSV file, useful for battery profiling, default is False
-battery_csv_logging_interval = 30                       # how often a new line will be added to the log file in seconds, default is 15
-#logfile                      = "00301a24.log"         # (path to) logfile, make sure you can access this location, I'm not going to waste time writing file/directory exceptions, default = "vectrix.log"
-#battery_csv_filename         = "00301a24.csv"   # name of the CSV file to write/append to, default is "vectorbatterylog.csv"
+battery_csv_logging_interval = 30                       # how often a new line will be added to the log file in seconds, default is 30
+logfile                      = "vectrix.log"            # (path to) logfile, make sure you can access this location, I'm not going to waste time writing file/directory exceptions, default = "vectrix.log"
+battery_csv_filename         = "vectorbatterylog.csv"   # name of the CSV file to write/append to, default is "vectorbatterylog.csv"
 # discord logging
-discord_logging              = True
-discord_webhook              = "https://discord.com/api/webhooks/1028581845169872947/BGTKfNqjFiPonnzaODW1h-vZDp4poRhI_rfd2IiFcK94JmwQL74SpCZnlAMN4QU_RpyH"
+discord_logging              = False                    # will log to a Discord webhook if enabled, default is False
+discord_webhook              = ""                       # discord webhook URL, default is ""
+discord_prefix               = ":robot:"                # discord_prefix will be appended to the beginning of every discord message, the normal [system] start of messages will always be omitted, default is ":robot:"
 # misc switches
 rainbow_eyes                 = True                     # will color Vector's eyes when Vectrix is active, blue = busy, yellow = timeout, green = all ok. This is only when Vectrix is controlling Vector and not permanent, default = True
-robot_dreams                 = True                     # silly notifications when Vector is asleep but moving
 eye_hue_yellow               = 0.11                     # eye color used for timeout events, default is 0.11
-eye_hue_red                  = 0                        # eye color used for some error states and while "backing up" from a wall, default is 0
-eye_hue_green                = 0.20                     # eye color used for "all ok", default is 0.21
-eye_hue_blue                 = 0.50                     # eye color used for "busy doing a thing", default is 0.57
-eye_hue_purple               = 0.85                     # eye color not currently used, default is 0.85
+eye_hue_red                  = 0                        # eye color used for "backing up" when driving, default is 0
+eye_hue_green                = 0.21                     # eye color used for "all ok", default is 0.21
+eye_hue_blue                 = 0.57                     # eye color used for "busy doing a thing", default is 0.57
+eye_hue_purple               = 0.85                     # eye color used for manual control, default is 0.85
 flash_borders_on_max         = False                    # will turn borders of gyro/accel/wheel graphs red when readings hit max (0 or 100), default is False
-quit_on_error                = False                    # the default behavior of Vectrix is to try to endlessly reconnect on error/disconnect, set this to True if you want the program to exit instead, default is False
-show_viewer                  = False                    # if you're running this program on a GUI and have the viewer configured, you can enable it here, default is False
-show_3dviewer                = False                    # if you're running this program on a GUI and have the 3d viewer configured, you can enable it here, default is False
+quit_on_error                = False                    # the default behavior of Vectrix is to try to endlessly reconnect on error/disconnect, set this to true if you want the program to exit instead, default is False
+show_viewer                  = False                    # (NOT TESTED/NOT WORKING) if you're running this program on a GUI and have the viewer configured, you can enable it here, default is False
+show_3dviewer                = False                    # (NOT TESTED/NOT WORKING) if you're running this program on a GUI and have the 3d viewer configured, you can enable it here, default is False
 # UI color customization:
 #0=black,1=red,2=green,3=yellow,4=blue,5=magenta,6=cyan,7=white
 ui_color_0                   = 0
@@ -110,25 +88,22 @@ ui_color_7                   = 7
 # # reds and blues # ui_color_0 = 0 # ui_color_1 = 5 # ui_color_2 = 1 # ui_color_3 = 4 # ui_color_4 = 4 # ui_color_5 = 4 # ui_color_6 = 1 # ui_color_7 = 5
 # # mono # ui_color_0 = 0 # ui_color_1 = 7 # ui_color_2 = 7 # ui_color_3 = 7 # ui_color_4 = 7 # ui_color_5 = 7 # ui_color_6 = 7 # ui_color_7 = 7
 #
-# MQTT is used for machine to machine messaging, in this case Vector's battery status. Needs paho-mqtt (pip install paho-mqtt) and a configured MQTT broker
-# this is for advanced users, I added it for myself and it's not really documented. You can find some info at https://forums.anki.com/t/vector-integration-with-openhab/45592
-MQTT_logging                    = True                     # MQTT is used to log Vector's battery data to an MQTT server.
-MQTT_HOST                       = "192.168.0.175"          # hostname/IP of the MQTT server
-MQTT_PORT                       = 1883                     # port of the MQTT server
-MQTT_KEEPALIVE_INTERVAL         = 20                       # MQTT keepalive
-#MQTT_TOPIC                     = "VectorStatusBlue"       # MQTT topic to post to
-MQTT_MSG_INTERVAL               = 5                        # interval in seconds to post to MQTT
-MQTT_DEBUG                      = False
+# MQTT is used for machine to machine messaging, in this case Vector's battery status. Needs paho-mqtt (pip install paho-mqtt) and a configured MQTT broker, see the code for the format used
+MQTT_logging                 = False                    # MQTT is used to log Vector's battery data to an MQTT server, default is False
+MQTT_HOST                    = "192.168.0.175"          # hostname/IP of the MQTT server, default is my local server :)
+MQTT_PORT                    = 1883                     # port of the MQTT server, default is 1883
+MQTT_KEEPALIVE_INTERVAL      = 20                       # MQTT keepalive, default is 20
+MQTT_TOPIC                   = "VectorStatus"           # MQTT topic to post to, default is "VectorStatus"
+MQTT_MSG_INTERVAL            = 5                        # interval in seconds to post to MQTT, dewfault is 5
+MQTT_DEBUG                   = False                    # debug logging for MQTT, default is False
 # debug switches
-reanimator_debug                = False   # spammy but will tell you exactly what reanimator is doing
-endless_reanimator              = False   # will endlessly run reanimator, overriding Vector's normal behaviors until the battery goes low
-debug_logging                   = True   # logs extended debug messages about robot activity, program activity, etc, default is False
-debug_logging_interval          = 0       # how often we log a summary of debug status in seconds, default is whatever it says currently. Set to 0 to disable intermittent recap (but keep all the rest of the debug msgs)
-use_presence                    = True    # ad
-except_logging                  = True
-voice_debug                     = False
-keyboard_control                = True
-#
+reanimator_debug             = False                    # spammy but will tell you exactly what reanimator is doing, default is False
+endless_reanimator           = False                    # will endlessly run reanimator, overriding Vector's normal behaviors until the battery goes low
+debug_logging                = False                    # logs extended debug messages about robot activity, program activity, etc, default is False
+debug_logging_interval       = 0                        # how often we log a summary of debug status in seconds, default is whatever it says currently. Set to 0 to disable intermittent recap (but keep all the rest of the debug msgs)
+use_presence                 = False                    # advanced users only, feature to only eject Vector from charger if there is presence in the room. How that presence is determined is up to you, you will have to edit the code, default is False
+voice_debug                  = False                    # a lazy option to have Vector announce when/what action he's going to perform when reanimator is active, default is False
+except_logging               = False                     # log any exceptions that occur, default is False
 # --- END OF CONFIG AND INFO SECTION ---
 # --- START OF LIBRARY IMPORT SECTION ---
 # --- In which we import needed libraries and inform you if they're missing ---
