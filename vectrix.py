@@ -1,30 +1,52 @@
 #!/usr/bin/env python3
-vt_version = "0.9.8-beta.4"
+vt_version = "0.9.8-beta.2"
 # --- START OF CONFIG AND INFO SECTION ---
 # --- In which we let you set preferences ---
 #
 # ROBOT SERIAL NUMBER, YOU NEED TO EDIT THIS AND REPLACE WITH YOUR ROBOT'S SERIAL NUMBER
 robot_serial = "00902b5d"
+
+# bluey = anki_vector.Robot("00301a24")  K5H9
+# greeny = anki_vector.Robot("00902b5d") C9T7
+# violet = anki_vector.Robot("007026b7") V4H1
+
+if robot_serial == "00301a24":
+    vector_name                  = "Bluey"
+    logfile                      = "blue.txt"
+    battery_csv_filename         = "blue.csv"
+    discord_prefix               = ":robot::blue_square:"
+    MQTT_TOPIC                   = "VectorStatusBlue" 
+if robot_serial == "00902b5d":
+    vector_name                  = "Greensy"
+    logfile                      = "green.txt"
+    battery_csv_filename         = "green.csv"
+    discord_prefix               = ":robot::green_square:"
+    MQTT_TOPIC                   = "VectorStatusGreen" 
+if robot_serial == "007026b7":
+    vector_name                  = "Violet"
+    logfile                      = "purple.txt"
+    battery_csv_filename         = "purple.csv"
+    discord_prefix               = ":robot::purple_square:"
+    MQTT_TOPIC                   = "VectorStatusPurple" 
 #
-# MANY SWITCHES, DEFAULTS ARE FINE, CHANGE AS DESIRED
-vector_name                  = "Vector"                 # vector_name will be used in most log entries for a more personalized log
+# SO MANY SWITCHES, DEFAULTS ARE FINE, CHANGE AS DESIRED
+#vector_name                  = "Bluey"                # vector_name will be used in most log entries for a more personalized log
 refresh_rate                 = 0.1                      # time in seconds to wait before program refreshes UI. Sane values are somewhere between 0.1 and 2. Too fast might crash Vector (=needs reboot), too slow makes this program useless, default value 0.1
 headless                     = False                    # whether headless mode (=no UI) is enabled, default is False
 passive_monitoring_only      = False                    # if enabled will override and disable file logging (CSV and normal), Reanimator, and continuous cycle no matter what options you set below, default is False
-reduced_logging              = False                    # will modify other logging options set below to only include "important" log messages, decided by me on a purely subjective basis, default is False
-keyboard_control             = False                    # allows use of various keyboard shortcuts (WIP), requires installing sshkeyboard: "pip install sshkeyboard", default is False
 # optional logging switches, the defaults are usually fine, change as suits you. Accepted values are described in comments. Don't turn everything on, it will make the program useless and slow.
+reduced_logging              = False                    # will modify the logging switches below to only log "significant" messages (as subjectively decided by me)
 header_logging               = True                     # whether to log startup info about Vectrix and Vector (version, IP, refresh rate, etc), default = True
 connect_logging              = True                     # logs connection and disconnection events, default is True
 speech_logging               = True                     # logs wake word and user intent (but user intent currently not working), default is True 
-dock_events_logging          = True                     # logs events like getting on/off charger and continuous cycle info, default is True
 charge_cycle_logging         = True                     # logs duration of charge and discharge cycles, default is True
+dock_events_logging          = True                     # logs events like getting on/off charger and continuous cycle info, default is True
 sensors_logging              = True                     # logs various sensors firing, default is True
 actions_logging              = True                     # logs various actions carried out, default is True
-face_logging                 = True                     # logs face detection, can be a bit spammy, default is False
 cube_logging                 = True                     # logs specific cube events (tapping, rotating) but only when cube is connected, default is False
-cube_powersaver              = True                     # if enabled, will disconnect the cube when it becomes available (experimental and possibly useless), default is True
-connect_to_cube              = False                    # will try to connect to an available cube on startup, incompatible with cube_powersaver, default is False
+face_logging                 = True                     # logs face detection, can be a bit spammy, default is False
+cube_powersaver              = True                     # if enabled, will disconnect the cube when it becomes available (experimental and possibly useless), default is False
+connect_to_cube              = False                    # will try to connect to an available cube, default is False
 object_logging               = False                    # logs object appearances, spammy, default is False
 object_logging_while_low_bat = False                    # temporarily turns on object logging while looking for the charger, spammy while active, default is False
 misc_logging                 = False                    # logs some navmap and other stuff, less interesting than it sounds tbh, spammy, default is False
@@ -39,41 +61,41 @@ rangefinder_logging_interval = 1                        # how often rangefinder 
 accelgyro_logging_interval   = 1                        #  how often accel/gyro values get logged in seconds if enabled, default is 1 
 # switches currently in testing (may cause hangs and other world-ending events)
 continuous_cycle             = True                     # if enabled will attempt to send Vector off charger as soon as battery is charged by requesting control and issuing a command, this is pretty flaky, use at own risk, default is False. 
-continuous_cycle_scheduling  = False                    # whether continuous cycle should only run between certain hours, default is False (=run at all hours)
+continuous_cycle_scheduling  = True                     # whether continuous cycle should only run between certain hours, default is False (=run at all hours)
 continuous_cycle_wait_time   = 120                      # how long to wait after battery is full in seconds before attempting to force Vector off the dock, default is 120
-continuous_cycle_random      = 180                      # random offset (random number between 1 and the value of this variable) in seconds that gets added to continuous_cycle_wait_time, default is 180
+continuous_cycle_random      = 120                      # random offset (from 1 to the variable value) in seconds that gets added to wait time, default is 720
 continuous_cycle_earliest    = 9                        # won't start continuous cycle if the time is before... notation in 24h time, 9am by default
-continuous_cycle_latest      = 17                       # won't start continuous cycle if the time is after...  notation in 24h time, 5pm by default
+continuous_cycle_latest      = 16                       # won't start continuous cycle if the time is after...  notation in 24h time, 5pm by default
 # reanimator will activate if Vector is sitting still off-dock for more than [reanimator_timeout] seconds, and try to make Vector more entertaining
 reanimator                   = True                     # whether reanimator is enabled, default is True. If you want to disable specific animations, see anim_list
 reanimator_logging           = True                     # will log some details on what reanimator is doing, if you want more detail see the reanimator_debug flag elsewhere, default is True
-reanimator_combo_chance      = True                     # (NOT IMPLEMENTED) 10% chance of multiple reanimator actions if set to True (animate/drive/roll cube), default is True
+reanimator_combo_chance      = True                     # 10% chance of multiple reanimator actions if set to True (animate/drive/roll cube), default is True
 reanimator_beep              = True                     # when reanimator drives Vector up to a wall, Vector will back off slowly while going beep beep like Cozmo, set to True to disable, default is False
 reanimator_timeout           = 4.5                      # time in seconds Vector needs to be idle before engaging reanimator. Idle is defined as off-dock with OK battery and are_motors_moving and are_wheels_moving both set to False, default is 5
 reanimator_min_distance      = 100                      # minimum required free space in front of Vector before reanimator is free to go for a drive, default is 100
 reanimator_max_distance      = 300                      # max distance in mm that reanimator is allowed to drive before stopping, default is 200
 # file logging switches
-datestamp_log_files          = True                     # will create new log files each day with name [currentdate]+[filename] for logfile and battery csv log (if enabled), default = True
+datestamp_log_files          = False                     # will create new log files each day with name [currentdate]+[filename] for logfile and battery csv log (if enabled), default = True
 file_logging                 = True                     # whether log entries should also be written to file; if set to 1 a logfile  will be created (default name "vectrix.log"), config below, default is True
 battery_csv_logging          = False                    # will log voltage values in csv format to separate CSV file, useful for battery profiling, default is False
-battery_csv_logging_interval = 30                       # how often a new line will be added to the log file in seconds, default is 30
-logfile                      = "vectrix.log"            # (path to) logfile, make sure you can access this location, I'm not going to waste time writing file/directory exceptions, default = "vectrix.log"
-battery_csv_filename         = "vectorbatterylog.csv"   # name of the CSV file to write/append to, default is "vectorbatterylog.csv"
+battery_csv_logging_interval = 30                       # how often a new line will be added to the log file in seconds, default is 15
+#logfile                      = "00301a24.log"         # (path to) logfile, make sure you can access this location, I'm not going to waste time writing file/directory exceptions, default = "vectrix.log"
+#battery_csv_filename         = "00301a24.csv"   # name of the CSV file to write/append to, default is "vectorbatterylog.csv"
 # discord logging
-discord_logging              = False                    # will log to a Discord webhook if enabled, default is False
-discord_webhook              = ""                       # discord webhook URL, default is ""
-discord_prefix               = ":robot:"                # discord_prefix will be appended to the beginning of every discord message, the normal [system] start of messages will always be omitted, default is ":robot:"
+discord_logging              = True
+discord_webhook              = "https://discord.com/api/webhooks/1028581845169872947/BGTKfNqjFiPonnzaODW1h-vZDp4poRhI_rfd2IiFcK94JmwQL74SpCZnlAMN4QU_RpyH"
 # misc switches
 rainbow_eyes                 = True                     # will color Vector's eyes when Vectrix is active, blue = busy, yellow = timeout, green = all ok. This is only when Vectrix is controlling Vector and not permanent, default = True
+robot_dreams                 = True                     # silly notifications when Vector is asleep but moving
 eye_hue_yellow               = 0.11                     # eye color used for timeout events, default is 0.11
-eye_hue_red                  = 0                        # eye color used for "backing up" when driving, default is 0
-eye_hue_green                = 0.21                     # eye color used for "all ok", default is 0.21
-eye_hue_blue                 = 0.57                     # eye color used for "busy doing a thing", default is 0.57
+eye_hue_red                  = 0                        # eye color used for some error states and while "backing up" from a wall, default is 0
+eye_hue_green                = 0.20                     # eye color used for "all ok", default is 0.21
+eye_hue_blue                 = 0.50                     # eye color used for "busy doing a thing", default is 0.57
 eye_hue_purple               = 0.85                     # eye color not currently used, default is 0.85
 flash_borders_on_max         = False                    # will turn borders of gyro/accel/wheel graphs red when readings hit max (0 or 100), default is False
-quit_on_error                = False                    # the default behavior of Vectrix is to try to endlessly reconnect on error/disconnect, set this to true if you want the program to exit instead, default is False
-show_viewer                  = False                    # (NOT TESTED/NOT WORKING) if you're running this program on a GUI and have the viewer configured, you can enable it here, default is False
-show_3dviewer                = False                    # (NOT TESTED/NOT WORKING) if you're running this program on a GUI and have the 3d viewer configured, you can enable it here, default is False
+quit_on_error                = False                    # the default behavior of Vectrix is to try to endlessly reconnect on error/disconnect, set this to True if you want the program to exit instead, default is False
+show_viewer                  = False                    # if you're running this program on a GUI and have the viewer configured, you can enable it here, default is False
+show_3dviewer                = False                    # if you're running this program on a GUI and have the 3d viewer configured, you can enable it here, default is False
 # UI color customization:
 #0=black,1=red,2=green,3=yellow,4=blue,5=magenta,6=cyan,7=white
 ui_color_0                   = 0
@@ -88,22 +110,25 @@ ui_color_7                   = 7
 # # reds and blues # ui_color_0 = 0 # ui_color_1 = 5 # ui_color_2 = 1 # ui_color_3 = 4 # ui_color_4 = 4 # ui_color_5 = 4 # ui_color_6 = 1 # ui_color_7 = 5
 # # mono # ui_color_0 = 0 # ui_color_1 = 7 # ui_color_2 = 7 # ui_color_3 = 7 # ui_color_4 = 7 # ui_color_5 = 7 # ui_color_6 = 7 # ui_color_7 = 7
 #
-# MQTT is used for machine to machine messaging, in this case Vector's battery status. Needs paho-mqtt (pip install paho-mqtt) and a configured MQTT broker, see the code for the format used
-MQTT_logging                 = False                    # MQTT is used to log Vector's battery data to an MQTT server, default is False
-MQTT_HOST                    = "192.168.0.175"          # hostname/IP of the MQTT server, default is my local server :)
-MQTT_PORT                    = 1883                     # port of the MQTT server, default is 1883
-MQTT_KEEPALIVE_INTERVAL      = 20                       # MQTT keepalive, default is 20
-MQTT_TOPIC                   = "VectorStatus"           # MQTT topic to post to, default is "VectorStatus"
-MQTT_MSG_INTERVAL            = 5                        # interval in seconds to post to MQTT, dewfault is 5
-MQTT_DEBUG                   = False                    # debug logging for MQTT, default is False
+# MQTT is used for machine to machine messaging, in this case Vector's battery status. Needs paho-mqtt (pip install paho-mqtt) and a configured MQTT broker
+# this is for advanced users, I added it for myself and it's not really documented. You can find some info at https://forums.anki.com/t/vector-integration-with-openhab/45592
+MQTT_logging                    = True                     # MQTT is used to log Vector's battery data to an MQTT server.
+MQTT_HOST                       = "192.168.0.175"          # hostname/IP of the MQTT server
+MQTT_PORT                       = 1883                     # port of the MQTT server
+MQTT_KEEPALIVE_INTERVAL         = 20                       # MQTT keepalive
+#MQTT_TOPIC                     = "VectorStatusBlue"       # MQTT topic to post to
+MQTT_MSG_INTERVAL               = 5                        # interval in seconds to post to MQTT
+MQTT_DEBUG                      = False
 # debug switches
-reanimator_debug             = False                    # spammy but will tell you exactly what reanimator is doing, default is False
-endless_reanimator           = False                    # will endlessly run reanimator, overriding Vector's normal behaviors until the battery goes low
-debug_logging                = False                    # logs extended debug messages about robot activity, program activity, etc, default is False
-debug_logging_interval       = 0                        # how often we log a summary of debug status in seconds, default is whatever it says currently. Set to 0 to disable intermittent recap (but keep all the rest of the debug msgs)
-use_presence                 = False                    # advanced users only, feature to only eject Vector from charger if there is presence in the room. How that presence is determined is up to you, you will have to edit the code, default is False
-voice_debug                  = False                    # a lazy option to have Vector announce when/what action he's going to perform when reanimator is active, default is False
-except_logging               = False                     # log any exceptions that occur, default is False
+reanimator_debug                = False   # spammy but will tell you exactly what reanimator is doing
+endless_reanimator              = False   # will endlessly run reanimator, overriding Vector's normal behaviors until the battery goes low
+debug_logging                   = True   # logs extended debug messages about robot activity, program activity, etc, default is False
+debug_logging_interval          = 0       # how often we log a summary of debug status in seconds, default is whatever it says currently. Set to 0 to disable intermittent recap (but keep all the rest of the debug msgs)
+use_presence                    = True    # ad
+except_logging                  = True
+voice_debug                     = False
+keyboard_control                = True
+#
 # --- END OF CONFIG AND INFO SECTION ---
 # --- START OF LIBRARY IMPORT SECTION ---
 # --- In which we import needed libraries and inform you if they're missing ---
@@ -541,7 +566,7 @@ def logging_thread():
                         pass
                 else:
                     if MQTT_DEBUG or except_logging:
-                        log.put("[system] logging_thread: no MQTT data to publish")
+                        log.put("[errors] logging_thread: no MQTT data to publish")
             else:
                 mqttcounter += (refresh_rate/5)
         # CSV file logging
@@ -663,7 +688,7 @@ def input_thread():
         global robot_connected, myrobot, log
         global ui_color_0, ui_color_1, ui_color_2, ui_color_3, ui_color_4, ui_color_5, ui_color_6, ui_color_7
         global debug_logging, robot_control_blocking
-        global battery_logging, reanimator_debug, voice_debug
+        global battery_logging, reanimator_debug, voice_debug, except_logging, reduced_logging
         global robot_command, controltoggle, manual_control, program_exit_requested
         global leavechargerrequest, robot_performing_action, getonchargerrequest
         return_charger_future = ""
@@ -671,9 +696,10 @@ def input_thread():
             if not program_exit_requested:
                 if str(key) == "h":
                     log.put("[inputs] PRESS ESCAPE TO QUIT. PRESS F1-F6 TO SELECT COLOR SCHEME")
-                    log.put("[inputs] PRESS D, R, B, V TO TOGGLE LOGGING FOR: DEBUG, REANIMATOR, BATTERY, VOICE")
+                    log.put("[inputs] PRESS D, R, B, V, X, U TO TOGGLE LOG SETTINGS FOR: DEBUG, REANIMATOR, BATTERY, VOICE, EXCEPTIONS, REDUCED LOGGING")
                     log.put("[inputs] PRESS 1-5 FOR: ANIMATION MIX, RANDOM DRIVE, ROLL CUBE, PICK UP CUBE, POP WHEELIE")
                     log.put("[inputs] PRESS C TO REQUEST/RELEASE MANUAL CONTROL. PRESS 9 TO RETURN TO CHARGER. PRESS 0 TO LEAVE CHARGER")
+                    log.put("[inputs] ACTION REQUESTS AND RETURN TO CHARGER DEPEND ON VECTOR'S INTERNAL STATE AND MAY FAIL")
                     log.put("[inputs] (IN MANUAL CONTROL ONLY) USE ARROW KEYS TO MOVE. Q&A TO MOVE LIFT. W&S TO MOVE HEAD. E CHANGES EYE COLOR")
                 if str(key) == "d":
                         debug_logging = not debug_logging
@@ -687,6 +713,12 @@ def input_thread():
                 if str(key) == "v":
                         voice_debug = not voice_debug
                         log.put("[inputs] voice_debug: "+str(voice_debug))  
+                if str(key) == "x":
+                        except_logging = not except_logging
+                        log.put("[inputs] except_logging: "+str(except_logging))  
+                if str(key) == "u":
+                        reduced_logging = not reduced_logging
+                        log.put("[inputs] reduced_logging: "+str(reduced_logging)) 
                 if str(key) == "c" and robot_connected and robot_good_to_go:
                     if controltoggle:
                         log.put("[inputs] requesting manual control")
@@ -919,7 +951,7 @@ def input_thread():
                     ui_color_7                   = 2
                     refresh_ui_colors()
         except Exception as e:
-            log.put("[system] input_thread error: " + repr(e))
+            log.put("[errors] input_thread error: " + repr(e))
     def release(key):
         global robot_command
         robot_command = "stop"
@@ -937,7 +969,7 @@ def input_thread():
             break
         except Exception as e:
             if except_logging and logging_thread_running:
-                log.put("[system] input_thread error: " + repr(e))
+                log.put("[errors] input_thread error: " + repr(e))
     program_exit_requested = True
     while manual_control:
         sleep(refresh_rate)
@@ -953,7 +985,6 @@ def robot_connection_thread():
     global log
     global sleeptime
     global have_robot_control
-    connecting = ""
     if program_exit_requested:
         myrobot.disconnect()
         if startup:
@@ -964,7 +995,7 @@ def robot_connection_thread():
         sleep(2)
         if debug_logging or connect_logging:
             log.put("[connct] connecting to " + str(vector_name))
-        connecting = myrobot.connect(timeout=30)
+        myrobot.connect(timeout=30)
         sleep(2)
         robot_connected = True
         robot_connection_error = False
@@ -1035,13 +1066,6 @@ def robot_connection_thread():
         else:
             quit_on_error_request = True
         robot_connection_error = True
-    if not robot_connected or robot_connection_error:
-        try:
-            if connecting:
-                connecting.cancel()
-        except:
-            if except_logging and logging_thread_running:
-                log.put("[connct] issue canceling connect for " + str(vector_name) + ", status " + str(connecting))
     if robot_connected and not robot_connection_error:
         sleeptime = 30
         if debug_logging or connect_logging:
@@ -1176,7 +1200,7 @@ def robot_connection_thread():
                 log.put("[errors] robot_connection_thread: Failed to play external audio on " + str(vector_name) + ": " +repr(e))
         except Exception as e:
             if except_logging and logging_thread_running:
-                log.put("[errors] robot_connection_thread UNHANDLED E: " +repr(e))
+                log.put("[errors] robot_connection_thread issue: " +repr(e))
         # function to aid in control loss detection
         sleep(refresh_rate*4)
 # robot_battery_thread is responsible for getting and publishing the robot battery data (voltage/charging/docked/batlevel)
@@ -1226,40 +1250,10 @@ def robot_battery_thread():
                 robot_connected = False
             except anki_vector.exceptions.VectorAsyncException as e:
                 if except_logging and not reduced_logging and logging_thread_running:
-                    log.put("[errors] robot_battery_threadInvalid asynchronous action attempted: " +repr(e))
+                    log.put("[errors] robot_battery_thread: Invalid asynchronous action attempted: " +repr(e))
             except anki_vector.exceptions.VectorBehaviorControlException as e:
                 if except_logging and not reduced_logging and logging_thread_running:
-                    log.put("[errors] robot_battery_threadInvalid behavior control action attempted: " +repr(e))
-            except anki_vector.exceptions.VectorCameraFeedException as e:
-                if except_logging and not reduced_logging and logging_thread_running:
-                    log.put("[errors] robot_battery_threadThe camera feed is not open: " +repr(e))  
-            except anki_vector.exceptions.VectorConfigurationException as e:
-                if except_logging and not reduced_logging and logging_thread_running:
-                    log.put("[errors] robot_battery_threadInvalid or missing configuration data: " +repr(e))     
-            except anki_vector.exceptions.VectorControlException as e:
-                if except_logging and not reduced_logging and logging_thread_running:
-                    log.put("[errors] robot_battery_threadUnable to run a function which requires behavior control: " +repr(e))     
-            except anki_vector.exceptions.VectorControlTimeoutException as e:
-                if except_logging and not reduced_logging and logging_thread_running:
-                    log.put("[errors] robot_battery_threadFailed to get control of " + str(vector_name) + ": " +repr(e))     
-            except anki_vector.exceptions.VectorInvalidVersionException as e:
-                if except_logging and not reduced_logging and logging_thread_running:
-                    log.put("[errors] robot_battery_threadYour SDK version is not compatible with " + str(vector_name) + "’s version: " +repr(e))     
-            except anki_vector.exceptions.VectorNotReadyException as e:
-                if except_logging and not reduced_logging and logging_thread_running:
-                    log.put("[errors] robot_battery_thread" + str(vector_name) + " tried to do something before it was ready: " +repr(e))     
-            except anki_vector.exceptions.VectorPropertyValueNotReadyException as e:
-                if except_logging and not reduced_logging and logging_thread_running:
-                    log.put("[errors] robot_battery_threadFailed to retrieve the value for this property: " +repr(e))     
-            except anki_vector.exceptions.VectorTimeoutException as e:
-                if except_logging and not reduced_logging and logging_thread_running:
-                    log.put("[errors] robot_battery_threadMessage took too long to complete: " +repr(e))     
-            except anki_vector.exceptions.VectorUnauthenticatedException as e:
-                if except_logging and not reduced_logging and logging_thread_running:
-                    log.put("[errors] robot_battery_threadFailed to authenticate request: " +repr(e))     
-            except anki_vector.exceptions.VectorUnimplementedException as e:
-                if except_logging and not reduced_logging and logging_thread_running:
-                    log.put("[errors] robot_battery_thread" + str(vector_name) + " does not handle this message: " +repr(e))   
+                    log.put("[errors] robot_battery_thread: Invalid behavior control action attempted: " +repr(e))
             except Exception as e:
                 if except_logging and logging_thread_running:
                     if repr(e).find("TimeoutError") != -1 and not reduced_logging:
@@ -1321,8 +1315,7 @@ def robot_sensor_thread():
                         robot_distance_mm       = rangefinder_distance.distance_mm
             except anki_vector.exceptions.VectorNotFoundException as e:
                 if except_logging and logging_thread_running:
-                    log.put("[connct] robot_sensor_thread: " + str(vector_name) + " not found exception. Error: " + repr(e))
-                sleep(5)
+                    log.put("[connct] robot_sensor_thread: " + str(vector_name) + " not found error. Error: " + repr(e))
                 robot_connected = False
                 robot_connection_error = False
             except anki_vector.exceptions.VectorUnavailableException as e:
@@ -1332,7 +1325,7 @@ def robot_sensor_thread():
                 robot_connection_error = True
             except anki_vector.exceptions.VectorConnectionException as e:
                 if except_logging and logging_thread_running:
-                    log.put("[connct] robot_sensor_thread: A general connection error occurred: " + repr(e))
+                    log.put("[connct] robot_sensor_thread: A connection error occurred: " + repr(e))
                 robot_connection_error = True
                 robot_connected = False
             except anki_vector.exceptions.VectorAsyncException as e:
@@ -1341,39 +1334,9 @@ def robot_sensor_thread():
             except anki_vector.exceptions.VectorBehaviorControlException as e:
                 if except_logging and not reduced_logging and logging_thread_running:
                     log.put("[errors] robot_sensor_thread: Invalid behavior control action attempted: " +repr(e))
-            except anki_vector.exceptions.VectorCameraFeedException as e:
-                if except_logging and not reduced_logging and logging_thread_running:
-                    log.put("[errors] robot_sensor_thread: The camera feed is not open: " +repr(e))  
-            except anki_vector.exceptions.VectorConfigurationException as e:
-                if except_logging and not reduced_logging and logging_thread_running:
-                    log.put("[errors] robot_sensor_thread: Invalid or missing configuration data: " +repr(e))     
-            except anki_vector.exceptions.VectorControlException as e:
-                if except_logging and not reduced_logging and logging_thread_running:
-                    log.put("[errors] robot_sensor_thread: Unable to run a function which requires behavior control: " +repr(e))     
-            except anki_vector.exceptions.VectorControlTimeoutException as e:
-                if except_logging and not reduced_logging and logging_thread_running:
-                    log.put("[errors] robot_sensor_thread: Failed to get control of " + str(vector_name) + ": " +repr(e))     
-            except anki_vector.exceptions.VectorInvalidVersionException as e:
-                if except_logging and not reduced_logging and logging_thread_running:
-                    log.put("[errors] robot_sensor_thread: Your SDK version is not compatible with " + str(vector_name) + "’s version: " +repr(e))     
-            except anki_vector.exceptions.VectorNotReadyException as e:
-                if except_logging and not reduced_logging and logging_thread_running:
-                    log.put("[errors] robot_sensor_thread: " + str(vector_name) + " tried to do something before it was ready: " +repr(e))     
-            except anki_vector.exceptions.VectorPropertyValueNotReadyException as e:
-                if except_logging and not reduced_logging and logging_thread_running:
-                    log.put("[errors] robot_sensor_thread: Failed to retrieve the value for this property: " +repr(e))     
-            except anki_vector.exceptions.VectorTimeoutException as e:
-                if except_logging and not reduced_logging and logging_thread_running:
-                    log.put("[errors] robot_sensor_thread: Message took too long to complete: " +repr(e))     
-            except anki_vector.exceptions.VectorUnauthenticatedException as e:
-                if except_logging and not reduced_logging and logging_thread_running:
-                    log.put("[errors] robot_sensor_thread: Failed to authenticate request: " +repr(e))     
-            except anki_vector.exceptions.VectorUnimplementedException as e:
-                if except_logging and not reduced_logging and logging_thread_running:
-                    log.put("[errors] robot_sensor_thread: " + str(vector_name) + " does not handle this message: " +repr(e))   
             except Exception as e:
                 if except_logging and logging_thread_running:
-                    log.put("[errors] robot_sensor_thread: robot_sensor_thread issue: " +repr(e))
+                    log.put("[errors] robot_sensor_thread issue: " +repr(e))
             robot_sensors_ready = True
         if robot_sensor_thread_stop:
             if debug_logging:
@@ -1427,7 +1390,7 @@ def robot_event_thread():
         if not recent_face_seen and event.face_id < 1:
             recent_face_seen = True
             if not reduced_logging:
-                log.put("[facedt] " + str(vector_name) + " sees a face but isn't sure who it is")
+                log.put("[events] " + str(vector_name) + " sees a face but isn't sure who it is")
         if not recent_known_face_seen and event.face_id >= 1:
             recent_known_face_seen = True
             try:
@@ -1584,29 +1547,35 @@ def robot_event_thread():
                         log.put("[debugs] robot_event_thread stopped")
                     robot_event_thread_running = False
                     return
-                except anki_vector.exceptions.VectorNotFoundException as e:
-                    if except_logging and logging_thread_running:
-                        log.put("[connct] robot_event_thread: " + str(vector_name) + " not found exception. Error: " + repr(e))
-                    robot_connected = False
-                    robot_connection_error = False
-                except anki_vector.exceptions.VectorUnavailableException as e:
-                    if except_logging and logging_thread_running:
-                        log.put("[connct] robot_event_thread: " + str(vector_name) + " unavailable error. Error: " + repr(e))
-                    robot_connected = False
-                    robot_connection_error = True
-                except anki_vector.exceptions.VectorConnectionException as e:
-                    if except_logging and logging_thread_running:
-                        log.put("[connct] robot_event_thread: A general connection error occurred: " + repr(e))
-                    robot_connection_error = True
-                    robot_connected = False
                 except Exception as e:
                     if except_logging and logging_thread_running:
-                        log.put("[errors] robot_event_thread issue: " +repr(e))
+                        log.put("[errors] robot_event_thread shutdown issue: " +repr(e))
             robot_events_ready = True
             sleep(refresh_rate/2)
+        except anki_vector.exceptions.VectorNotFoundException as e:
+            if except_logging and logging_thread_running:
+                log.put("[connct] robot_event_thread: " + str(vector_name) + " not found error. Error: " + repr(e))
+            robot_connected = False
+            robot_connection_error = False
+        except anki_vector.exceptions.VectorUnavailableException as e:
+            if except_logging and logging_thread_running:
+                log.put("[connct] robot_event_thread: " + str(vector_name) + " unavailable error. Error: " + repr(e))
+            robot_connected = False
+            robot_connection_error = True
+        except anki_vector.exceptions.VectorConnectionException as e:
+            if except_logging and logging_thread_running:
+                log.put("[connct] robot_event_thread: A connection error occurred: " + repr(e))
+            robot_connection_error = True
+            robot_connected = False
+        except anki_vector.exceptions.VectorAsyncException as e:
+            if except_logging and not reduced_logging and logging_thread_running:
+                log.put("[errors] robot_event_thread: Invalid asynchronous action attempted: " +repr(e))
+        except anki_vector.exceptions.VectorBehaviorControlException as e:
+            if except_logging and not reduced_logging and logging_thread_running:
+                log.put("[errors] robot_event_thread: Invalid behavior control action attempted: " +repr(e))
         except Exception as e:
             if except_logging and logging_thread_running:
-                log.put("[errors] robot_event_thread: UNHANDLED E: " + repr(e))
+                log.put("[errors] robot_event_thread issue: " +repr(e))
 # robot_control_request is responsible for gaining control over the connected robot and releasing it.
 def robot_control_request(control_or_release, force_control):
     global myrobot, control_response
@@ -1683,43 +1652,9 @@ def robot_control_request(control_or_release, force_control):
                 timeout = timeout + refresh_rate
                 sleep(refresh_rate)
             sleep(1)
+            if actions_logging and not have_robot_control:
+                log.put("[action] " + str(vector_name) + " is in freeplay mode")
             return
-        except anki_vector.exceptions.VectorAsyncException as e:
-            if except_logging and not reduced_logging and logging_thread_running:
-                log.put("[errors] robot_control_request: Invalid asynchronous action attempted: " +repr(e))
-        except anki_vector.exceptions.VectorBehaviorControlException as e:
-            if except_logging and not reduced_logging and logging_thread_running:
-                log.put("[errors] robot_control_request: Invalid behavior control action attempted: " +repr(e))
-        except anki_vector.exceptions.VectorCameraFeedException as e:
-            if except_logging and not reduced_logging and logging_thread_running:
-                log.put("[errors] robot_control_request: The camera feed is not open: " +repr(e))  
-        except anki_vector.exceptions.VectorConfigurationException as e:
-            if except_logging and not reduced_logging and logging_thread_running:
-                log.put("[errors] robot_control_request: Invalid or missing configuration data: " +repr(e))     
-        except anki_vector.exceptions.VectorControlException as e:
-            if except_logging and not reduced_logging and logging_thread_running:
-                log.put("[errors] robot_control_request: Unable to run a function which requires behavior control: " +repr(e))     
-        except anki_vector.exceptions.VectorControlTimeoutException as e:
-            if except_logging and not reduced_logging and logging_thread_running:
-                log.put("[errors] robot_control_request: Failed to get control of " + str(vector_name) + ": " +repr(e))     
-        except anki_vector.exceptions.VectorInvalidVersionException as e:
-            if except_logging and not reduced_logging and logging_thread_running:
-                log.put("[errors] robot_control_request: Your SDK version is not compatible with " + str(vector_name) + "’s version: " +repr(e))     
-        except anki_vector.exceptions.VectorNotReadyException as e:
-            if except_logging and not reduced_logging and logging_thread_running:
-                log.put("[errors] robot_control_request: " + str(vector_name) + " tried to do something before it was ready: " +repr(e))     
-        except anki_vector.exceptions.VectorPropertyValueNotReadyException as e:
-            if except_logging and not reduced_logging and logging_thread_running:
-                log.put("[errors] robot_control_request: Failed to retrieve the value for this property: " +repr(e))     
-        except anki_vector.exceptions.VectorTimeoutException as e:
-            if except_logging and not reduced_logging and logging_thread_running:
-                log.put("[errors] robot_control_request: Message took too long to complete: " +repr(e))     
-        except anki_vector.exceptions.VectorUnauthenticatedException as e:
-            if except_logging and not reduced_logging and logging_thread_running:
-                log.put("[errors] robot_control_request: Failed to authenticate request: " +repr(e))     
-        except anki_vector.exceptions.VectorUnimplementedException as e:
-            if except_logging and not reduced_logging and logging_thread_running:
-                log.put("[errors] robot_control_request: " + str(vector_name) + " does not handle this message: " +repr(e))   
         except Exception as e:
             if except_logging and logging_thread_running:
                 log.put("[errors] robot_control_request: issue releasing control: "+repr(e))
@@ -1790,46 +1725,10 @@ def yeetbot():
         robot_control_blocking = False
         incontrol = 0
         robot_control_request(False,False)
-        return
-    except anki_vector.exceptions.VectorAsyncException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] yeetbot: Invalid asynchronous action attempted: " +repr(e))
-    except anki_vector.exceptions.VectorBehaviorControlException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] yeetbot: Invalid behavior control action attempted: " +repr(e))
-    except anki_vector.exceptions.VectorCameraFeedException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] yeetbot: The camera feed is not open: " +repr(e))  
-    except anki_vector.exceptions.VectorConfigurationException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] yeetbot: Invalid or missing configuration data: " +repr(e))     
-    except anki_vector.exceptions.VectorControlException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] yeetbot: Unable to run a function which requires behavior control: " +repr(e))     
-    except anki_vector.exceptions.VectorControlTimeoutException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] yeetbot: Failed to get control of " + str(vector_name) + ": " +repr(e))     
-    except anki_vector.exceptions.VectorInvalidVersionException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] yeetbot: Your SDK version is not compatible with " + str(vector_name) + "’s version: " +repr(e))     
-    except anki_vector.exceptions.VectorNotReadyException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] yeetbot: " + str(vector_name) + " tried to do something before it was ready: " +repr(e))     
-    except anki_vector.exceptions.VectorPropertyValueNotReadyException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] yeetbot: Failed to retrieve the value for this property: " +repr(e))     
-    except anki_vector.exceptions.VectorTimeoutException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] yeetbot: Message took too long to complete: " +repr(e))     
-    except anki_vector.exceptions.VectorUnauthenticatedException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] yeetbot: Failed to authenticate request: " +repr(e))     
-    except anki_vector.exceptions.VectorUnimplementedException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] yeetbot: " + str(vector_name) + " does not handle this message: " +repr(e))   
+        return   
     except Exception as e:
         if except_logging and logging_thread_running:
-            msg="[errors] yeetbot: UNHANDLED E: " +repr(e)
+            msg="[errors] yeetbot issue: " +repr(e)
             log.put(msg)
         yeetbot_thread_running = False
         robot_control_blocking = False
@@ -1899,7 +1798,7 @@ def reanimator_thread():
                 log.put("[ranmtr] exiting thread - robot state out of scope")
     except Exception as e:
         if except_logging and logging_thread_running:
-            log.put("[errors] reanimator_thread: UNHANDLED E: " + repr(e))
+            log.put("[errors] reanimator_thread issue: " + repr(e))
         robot_control_blocking = False
         reanimator_thread_running = False
         return
@@ -2009,45 +1908,9 @@ def robot_mix_animations():
         if debug_logging:
             log.put("[debugs] robot_mix_animations: Animation played, releasing")
         request = robot_control_request(False,False)
-    except anki_vector.exceptions.VectorAsyncException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_mix_animations: Invalid asynchronous action attempted: " +repr(e))
-    except anki_vector.exceptions.VectorBehaviorControlException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_mix_animations: Invalid behavior control action attempted: " +repr(e))
-    except anki_vector.exceptions.VectorCameraFeedException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_mix_animations: The camera feed is not open: " +repr(e))  
-    except anki_vector.exceptions.VectorConfigurationException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_mix_animations: Invalid or missing configuration data: " +repr(e))     
-    except anki_vector.exceptions.VectorControlException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_mix_animations: Unable to run a function which requires behavior control: " +repr(e))     
-    except anki_vector.exceptions.VectorControlTimeoutException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_mix_animations: Failed to get control of " + str(vector_name) + ": " +repr(e))     
-    except anki_vector.exceptions.VectorInvalidVersionException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_mix_animations: Your SDK version is not compatible with " + str(vector_name) + "’s version: " +repr(e))     
-    except anki_vector.exceptions.VectorNotReadyException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] " + str(vector_name) + " tried to do something before it was ready: " +repr(e))     
-    except anki_vector.exceptions.VectorPropertyValueNotReadyException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_mix_animations: Failed to retrieve the value for this property: " +repr(e))     
-    except anki_vector.exceptions.VectorTimeoutException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_mix_animations: Message took too long to complete: " +repr(e))     
-    except anki_vector.exceptions.VectorUnauthenticatedException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_mix_animations: Failed to authenticate request: " +repr(e))     
-    except anki_vector.exceptions.VectorUnimplementedException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_mix_animations: " + str(vector_name) + " does not handle this message: " +repr(e))   
     except Exception as e:
         if except_logging and logging_thread_running:
-            log.put("[errors] robot_mix_animations: UNHANDLED E: " + repr(e))
+            log.put("[errors] robot_mix_animations issue: " + repr(e))
     if debug_logging:
         log.put("[debugs] robot_mix_animations job complete")
     return
@@ -2118,12 +1981,10 @@ def robot_random_drive():
             x = 0
             while x < 3:
                 prox_array.append(robot_distance_mm)
-                if x == 0:
+                if x == 0 or x == 2:
                     turn_future = myrobot.behavior.turn_in_place(degrees(10))
                 if x == 1:
                     turn_future = myrobot.behavior.turn_in_place(degrees(-20))
-                if x == 2:
-                    turn_future = myrobot.behavior.turn_in_place(degrees(10))
                 timeout = 0
                 while str(turn_future).find("pending") != -1:
                     if not robot_good_to_go:
@@ -2244,46 +2105,10 @@ def robot_random_drive():
                     say_future = myrobot.behavior.say_text("no space!")
             sleep(refresh_rate)
             prox_array.clear()
-            total_steps_count += 1
-    except anki_vector.exceptions.VectorAsyncException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_random_drive: Invalid asynchronous action attempted: " +repr(e))
-    except anki_vector.exceptions.VectorBehaviorControlException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_random_drive: Invalid behavior control action attempted: " +repr(e))
-    except anki_vector.exceptions.VectorCameraFeedException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_random_drive: The camera feed is not open: " +repr(e))  
-    except anki_vector.exceptions.VectorConfigurationException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_random_drive: Invalid or missing configuration data: " +repr(e))     
-    except anki_vector.exceptions.VectorControlException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_random_drive: Unable to run a function which requires behavior control: " +repr(e))     
-    except anki_vector.exceptions.VectorControlTimeoutException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_random_drive: Failed to get control of " + str(vector_name) + ": " +repr(e))     
-    except anki_vector.exceptions.VectorInvalidVersionException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_random_drive: Your SDK version is not compatible with " + str(vector_name) + "’s version: " +repr(e))     
-    except anki_vector.exceptions.VectorNotReadyException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_random_drive: " + str(vector_name) + " tried to do something before it was ready: " +repr(e))     
-    except anki_vector.exceptions.VectorPropertyValueNotReadyException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_random_drive: Failed to retrieve the value for this property: " +repr(e))     
-    except anki_vector.exceptions.VectorTimeoutException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_random_drive: Message took too long to complete: " +repr(e))     
-    except anki_vector.exceptions.VectorUnauthenticatedException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_random_drive: Failed to authenticate request: " +repr(e))     
-    except anki_vector.exceptions.VectorUnimplementedException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_random_drive: " + str(vector_name) + " does not handle this message: " +repr(e))   
+            total_steps_count += 1 
     except Exception as e:
         if except_logging and logging_thread_running:
-            log.put("[errors] robot_random_drive UNHANDLED E: "+ repr(e))
+            log.put("[errors] robot_random_drive issue: "+ repr(e))
     if rainbow_eyes and eyecolor_future:
         eyecolor_future.cancel()
     request = robot_control_request(False,False)
@@ -2333,7 +2158,7 @@ def robot_roll_cube():
             eyecolor_future.cancel()
     except Exception as e:
         if except_logging and logging_thread_running:
-            log.put("[errors] robot_roll_cube: Drive to cube issue: "+str(e))
+            log.put("[errors] robot_roll_cube: drive to cube issue: "+str(e))
     if not robot_good_to_go:
         request = robot_control_request(False,False)
         return
@@ -2362,45 +2187,9 @@ def robot_roll_cube():
             eyecolor_future.cancel()
         rollable_cube = False
         request = robot_control_request(False,False)
-    except anki_vector.exceptions.VectorAsyncException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_roll_cube: Invalid asynchronous action attempted: " +repr(e))
-    except anki_vector.exceptions.VectorBehaviorControlException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_roll_cube: Invalid behavior control action attempted: " +repr(e))
-    except anki_vector.exceptions.VectorCameraFeedException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_roll_cube: The camera feed is not open: " +repr(e))  
-    except anki_vector.exceptions.VectorConfigurationException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_roll_cube: Invalid or missing configuration data: " +repr(e))     
-    except anki_vector.exceptions.VectorControlException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_roll_cube: Unable to run a function which requires behavior control: " +repr(e))     
-    except anki_vector.exceptions.VectorControlTimeoutException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_roll_cube: Failed to get control of " + str(vector_name) + ": " +repr(e))     
-    except anki_vector.exceptions.VectorInvalidVersionException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_roll_cube: Your SDK version is not compatible with " + str(vector_name) + "’s version: " +repr(e))     
-    except anki_vector.exceptions.VectorNotReadyException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_roll_cube: " + str(vector_name) + " tried to do something before it was ready: " +repr(e))     
-    except anki_vector.exceptions.VectorPropertyValueNotReadyException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_roll_cube: Failed to retrieve the value for this property: " +repr(e))     
-    except anki_vector.exceptions.VectorTimeoutException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_roll_cube: Message took too long to complete: " +repr(e))     
-    except anki_vector.exceptions.VectorUnauthenticatedException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_roll_cube: Failed to authenticate request: " +repr(e))     
-    except anki_vector.exceptions.VectorUnimplementedException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_roll_cube: " + str(vector_name) + " does not handle this message: " +repr(e))   
     except Exception as e:
         if except_logging and logging_thread_running:
-            log.put("[errors] robot_roll_cube: Roll cube issue: "+str(e))
+            log.put("[errors] robot_roll_cube rolling issue: "+str(e))
     # cointoss = random.randint(1, 100)
     # if cointoss > 70:
         # # play an extra animation at the end just because
@@ -2460,45 +2249,9 @@ def robot_go_to_random_pose():
         if backupchance > 30:
             robot_back_it_up()
         robot_control_request(False,False)
-    except anki_vector.exceptions.VectorAsyncException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_go_to_random_pose: Invalid asynchronous action attempted: " +repr(e))
-    except anki_vector.exceptions.VectorBehaviorControlException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_go_to_random_pose: Invalid behavior control action attempted: " +repr(e))
-    except anki_vector.exceptions.VectorCameraFeedException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_go_to_random_pose: The camera feed is not open: " +repr(e))  
-    except anki_vector.exceptions.VectorConfigurationException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_go_to_random_pose: Invalid or missing configuration data: " +repr(e))     
-    except anki_vector.exceptions.VectorControlException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_go_to_random_pose: Unable to run a function which requires behavior control: " +repr(e))     
-    except anki_vector.exceptions.VectorControlTimeoutException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_go_to_random_pose: Failed to get control of " + str(vector_name) + ": " +repr(e))     
-    except anki_vector.exceptions.VectorInvalidVersionException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_go_to_random_pose: Your SDK version is not compatible with " + str(vector_name) + "’s version: " +repr(e))     
-    except anki_vector.exceptions.VectorNotReadyException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_go_to_random_pose: " + str(vector_name) + " tried to do something before it was ready: " +repr(e))     
-    except anki_vector.exceptions.VectorPropertyValueNotReadyException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_go_to_random_pose: Failed to retrieve the value for this property: " +repr(e))     
-    except anki_vector.exceptions.VectorTimeoutException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_go_to_random_pose: Message took too long to complete: " +repr(e))     
-    except anki_vector.exceptions.VectorUnauthenticatedException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_go_to_random_pose: Failed to authenticate request: " +repr(e))     
-    except anki_vector.exceptions.VectorUnimplementedException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_go_to_random_pose: " + str(vector_name) + " does not handle this message: " +repr(e))   
     except Exception as e:
         if except_logging and logging_thread_running:
-            log.put("[errors] robot_go_to_random_pose E: "+repr(e))
+            log.put("[errors] robot_go_to_random_pose issue: "+repr(e))
     return
 # robot_look_around will briefly (4 seconds max) make Vector look around
 def robot_look_around():
@@ -2538,7 +2291,7 @@ def robot_look_around():
         robot_control_request(False,False)
     except Exception as e:
         if except_logging and logging_thread_running:
-            log.put("[errors] robot_look_around E: "+repr(e))
+            log.put("[errors] robot_look_around issue: "+repr(e))
     return
 # robot_pick_up_cube will attempt to pick up a cube
 def robot_pick_up_cube():
@@ -2638,12 +2391,10 @@ def robot_pick_up_cube():
                 put_down_cube_future.cancel()
             if rainbow_eyes and eyecolor_future:
                 eyecolor_future.cancel()
-            
-            
         robot_control_request(False,False)
     except Exception as e:
         if except_logging and logging_thread_running:
-            log.put("[errors] robot_pick_up_cube E: "+repr(e))
+            log.put("[errors] robot_pick_up_cube issue: "+repr(e))
     return
 # robot_pop_wheelie will attempt to pop a wheelie
 def robot_pop_wheelie():
@@ -2683,7 +2434,7 @@ def robot_pop_wheelie():
         robot_control_request(False,False)
     except Exception as e:
         if except_logging and logging_thread_running:
-            log.put("[errors] robot_pick_up_cube E: "+repr(e))
+            log.put("[errors] robot_pop_wheelie issue: "+repr(e))
     return
 # robot_back_it_up will measure the distance ahead and maybe roll back a little
 def robot_back_it_up():
@@ -2818,45 +2569,9 @@ def robot_back_it_up():
         else:
             if reanimator_debug and not reduced_logging:
                 log.put("[ranmtr] robot_back_it_up: " + str(vector_name) + " has "+str(final_range)+"mm free space in front")
-    except anki_vector.exceptions.VectorAsyncException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_back_it_up: Invalid asynchronous action attempted: " +repr(e))
-    except anki_vector.exceptions.VectorBehaviorControlException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_back_it_up: Invalid behavior control action attempted: " +repr(e))
-    except anki_vector.exceptions.VectorCameraFeedException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_back_it_up: The camera feed is not open: " +repr(e))  
-    except anki_vector.exceptions.VectorConfigurationException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_back_it_up: Invalid or missing configuration data: " +repr(e))     
-    except anki_vector.exceptions.VectorControlException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_back_it_up: Unable to run a function which requires behavior control: " +repr(e))     
-    except anki_vector.exceptions.VectorControlTimeoutException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_back_it_up: Failed to get control of " + str(vector_name) + ": " +repr(e))     
-    except anki_vector.exceptions.VectorInvalidVersionException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_back_it_up: Your SDK version is not compatible with " + str(vector_name) + "’s version: " +repr(e))     
-    except anki_vector.exceptions.VectorNotReadyException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_back_it_up: " + str(vector_name) + " tried to do something before it was ready: " +repr(e))     
-    except anki_vector.exceptions.VectorPropertyValueNotReadyException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_back_it_up: Failed to retrieve the value for this property: " +repr(e))     
-    except anki_vector.exceptions.VectorTimeoutException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_back_it_up: Message took too long to complete: " +repr(e))     
-    except anki_vector.exceptions.VectorUnauthenticatedException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_back_it_up: Failed to authenticate request: " +repr(e))     
-    except anki_vector.exceptions.VectorUnimplementedException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] robot_back_it_up: " + str(vector_name) + " does not handle this message: " +repr(e))   
     except Exception as e:
         if except_logging and logging_thread_running:
-            log.put("[errors] robot_back_it_up UNHANDLED E: "+ repr(e))
+            log.put("[errors] robot_back_it_up issue: "+ repr(e))
     return
 # manual_robot_control is responsible for handling manual robot control
 def manual_robot_control():
@@ -2911,7 +2626,7 @@ def manual_robot_control():
                     randomcolor = 0
         except Exception as e:
             if except_logging and logging_thread_running:
-                log.put("[system] input_thread error: " + repr(e))
+                log.put("[errors] manual_robot_control issue: " + repr(e))
         if program_exit_requested:
             break
         sleep(refresh_rate)
@@ -2933,7 +2648,7 @@ def normalize_value(rawvalue):
         return returnvalue
     except Exception as e:
         if except_logging and logging_thread_running:
-            log.put("[errors] normalize_value: that wasn't right. E: "+repr(e))
+            log.put("[errors] normalize_value: that wasn't right: "+repr(e))
 # bool_to_value takes a boolean as input and returns an int 0/100 value for display
 def bool_to_value(inputbool):
     try:
@@ -2944,7 +2659,7 @@ def bool_to_value(inputbool):
         return returnvalue
     except Exception as e:
         if except_logging and logging_thread_running:
-            log.put("[errors] bool_to_value: that was not a boolean. E: "+repr(e))
+            log.put("[errors] bool_to_value: that was not a boolean: "+repr(e))
 # refresh_ui_colors will reload all values (called when color scheme changes)
 def refresh_ui_colors():
     global myrobot_batlevel,myrobot_charging,myrobot_docked,myrobot_calmpower,myrobot_gyrox,myrobot_accelx,myrobot_cliffdetect
@@ -3015,15 +2730,6 @@ def sigterm_handler(_signo, _stack_frame):
     log.put("[errors] Program exit requested by SIGTERM, closing threads")
     if headless:
         print("Program exit requested by SIGTERM, closing threads")
-    robot_connected = False
-    if connect_to_cube and myrobot.world.connected_light_cube:
-        try:
-            myrobot.world.disconnect_cube()
-        except:
-            log.put("[errors] issue disconnecting from " + str(vector_name) + "'s cube")
-    # robot_battery_thread_stop = True
-    # robot_sensor_thread_stop = True
-    # robot_event_thread_stop = True
     program_exit_requested = True
 signal.signal(signal.SIGTERM, sigterm_handler)
 # MQTT publish debug function
@@ -3058,24 +2764,24 @@ if not ui_thread_running and not headless:
         Thread(name = "VT-UI", target = ui_thread).start()
     except Exception as e:
         print("[errors] FATAL: Issue starting ui_thread, exiting. E: "+repr(e))
-        exit()
+        program_exit_requested = True
 # start logging thread
-if not logging_thread_running:
+if not logging_thread_running and not program_exit_requested:
     try:
         logging_thread_running = True
         Thread(name = "VT-LOG", target = logging_thread).start()
     except Exception as e:
         print("[errors] FATAL: Issue starting logging_thread, exiting. E: "+repr(e))
-        exit()   
+        program_exit_requested = True  
 # start up input thread
-if not input_thread_running and keyboard_control:
+if not input_thread_running and keyboard_control and not program_exit_requested:
     try:
         input_thread_running = True
         Thread(name = "VT-input", target = input_thread).start()
     except Exception as e:
         log.put("[errors] FATAL: Issue starting thread for input_thread, exiting. E: "+repr(e))
-        exit()
-if debug_logging:
+        program_exit_requested = True
+if debug_logging and not program_exit_requested:
     log.put("[system] Initializing and connecting to " + str(vector_name))
 # start robot connection thread
 while not robot_connected and not program_exit_requested:
@@ -3097,13 +2803,13 @@ while not robot_connected and not program_exit_requested:
             Thread(name = "VT-conn", target = robot_connection_thread).start()
         except Exception as e:
             log.put("[errors] FATAL: Issue starting thread for robot_connection_thread, exiting. E: "+repr(e))
-            exit()
+            program_exit_requested = True
     else:
         if debug_logging and not reduced_logging:
             log.put("[debugs] initial connect: waiting for " + str(vector_name) + " to conn, conn thread running: "+str(robot_connection_thread_running))
         sleep(3)
 if program_exit_requested:
-    log.put("[system] exiting")
+    log.put("[system] exit requested before VecTrix was fully started, attempting to stop threads and exit")
     sleep(0.4)
     input_thread_stop   = True
     logging_thread_stop = True
@@ -3570,7 +3276,7 @@ while (not program_exit_requested and not quit_on_error_request):
                     if fullcharge and docked and not charging:
                         discharge_start_time = '{:%H:%M:%S}'.format(datetime.datetime.now())
                         if dock_events_logging:
-                            log.put("[chargr] " + str(vector_name) + " has left the charger with a full battery charge")
+                            log.put("[action] " + str(vector_name) + " has left the charger with a full battery charge")
                         partial = False
                         if continuous_cycle and dock_events_logging and not reduced_logging:
                             log.put("[system] continuous cycle is active, current cycle for " + str(vector_name) + " is: " + str(yeetcounter))
@@ -3592,7 +3298,7 @@ while (not program_exit_requested and not quit_on_error_request):
                             d2 = ""
                             d3 = ""
                         if dock_events_logging:
-                            log.put("[chargr] " + str(vector_name) + " has left the charger but not with a full battery charge")
+                            log.put("[action] " + str(vector_name) + " has left the charger but not with a full battery charge")
                     # not on dock, low power notification
                     if not lowpower and robot_batlevel == 1:
                         #lowpower_time = '{:%H:%M:%S}'.format(datetime.datetime.now())
@@ -3604,13 +3310,13 @@ while (not program_exit_requested and not quit_on_error_request):
                     if lowpower and robot_charging and not docked and not fullcharge and not charging:
                         discharge_stop_time = '{:%H:%M:%S}'.format(datetime.datetime.now())
                         if dock_events_logging:
-                            log.put("[chargr] " + str(vector_name) + " has successfully docked with charger after battery hit low state")
+                            log.put("[action] " + str(vector_name) + " has successfully docked with charger after battery hit low state")
                     # returned to dock, not with low battery
                     if not lowpower and not docked and not charging and robot_charging:
                         discharge_stop_time = '{:%H:%M:%S}'.format(datetime.datetime.now())
                         partial = True
                         if dock_events_logging:
-                            log.put("[chargr] " + str(vector_name) + " has successfully docked with charger before battery hit low state")
+                            log.put("[action] " + str(vector_name) + " has successfully docked with charger before battery hit low state")
                     # on dock charging
                     if not charging and robot_charging and not docked:
                         charge_start_time = '{:%H:%M:%S}'.format(datetime.datetime.now())
@@ -3981,34 +3687,7 @@ while (not program_exit_requested and not quit_on_error_request):
             log.put("[errors] main_loop: Invalid behavior control action attempted: " +repr(e))
     except anki_vector.exceptions.VectorCameraFeedException as e:
         if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] main_loop: The camera feed is not open: " +repr(e))  
-    except anki_vector.exceptions.VectorConfigurationException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] main_loop: Invalid or missing configuration data: " +repr(e))     
-    except anki_vector.exceptions.VectorControlException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] main_loop: Unable to run a function which requires behavior control: " +repr(e))     
-    except anki_vector.exceptions.VectorControlTimeoutException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] main_loop: Failed to get control of " + str(vector_name) + ": " +repr(e))     
-    except anki_vector.exceptions.VectorInvalidVersionException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] main_loop: Your SDK version is not compatible with " + str(vector_name) + "’s version: " +repr(e))     
-    except anki_vector.exceptions.VectorNotReadyException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] main_loop: " + str(vector_name) + " tried to do something before it was ready: " +repr(e))     
-    except anki_vector.exceptions.VectorPropertyValueNotReadyException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] main_loop: Failed to retrieve the value for this property: " +repr(e))     
-    except anki_vector.exceptions.VectorTimeoutException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] main_loop: Message took too long to complete: " +repr(e))     
-    except anki_vector.exceptions.VectorUnauthenticatedException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] main_loop: Failed to authenticate request: " +repr(e))     
-    except anki_vector.exceptions.VectorUnimplementedException as e:
-        if except_logging and not reduced_logging and logging_thread_running:
-            log.put("[errors] main_loop: " + str(vector_name) + " does not handle this message: " +repr(e))   
+            log.put("[errors] main_loop: The camera feed is not open: " +repr(e))    
     except Exception as e:
         if except_logging and logging_thread_running:
             if logging_thread_running:
