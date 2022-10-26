@@ -31,7 +31,7 @@ after satisfying the requirements above and downloading the file: in vectrix.py,
 - highly configurable (yet sane defaults, only required setting is the robot serial number)
 
 # Safety notice
-While I take care not to program features that will send Vector careening over a ledge, there are many unexpected events that can happen to Vector even without this software. I have my Vectors contained in a fairly large play space with raised walls. If you are using the Reanimator feature (on by default), don't leave your Vector unsupervised or in a place where a fall might cause damage.
+While I take care not to program features that will send Vector careening over an edge, there are many unexpected events that can happen to Vector even without this software. I have my Vectors contained in a fairly large play space with raised walls. If you are using the Reanimator feature (on by default), don't leave your Vector unsupervised or in a place where a fall might cause damage. If you use manual control it's entirely possible to send Vector over an edge, so be careful.
 
 # Screenshot (somewhat out of date)
 ![screenshot (may be out of date)](https://i.imgur.com/3SiETdd.jpg)
