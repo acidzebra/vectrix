@@ -2,6 +2,11 @@ Changelog
 
 note: earlier versions of VecTrix (named VectorDiag) are available here: https://gist.github.com/acidzebra/74d7b288b267d7fcea8c33358d4c2e78
 
+0.9.8-beta.4
+- The Great Variable Rewrite: rewrote a bunch of variables as proper booleans to improve legibility and my sanity
+- moved some function blocks around for consistency
+- improved program exit routine for all cases (escape key, CTRL+C, SIGTERM)
+
 0.9.8-beta.3
 - fixes and cleanup
 
@@ -9,7 +14,7 @@ note: earlier versions of VecTrix (named VectorDiag) are available here: https:/
 - added voice_debug switch for lazy behavior monitoring/debugging (Vector will announce reanimator actions)
 - minor routine optimizations, fixes
 - untangled exceptions vs normal debug statements
-- begun work on keyboard input (optional, needs library sshkeyboard installed), press H while program is running for help
+- keyboard input (optional, needs library sshkeyboard installed), press H while program is running for help
 - currently keyboard input allows: remote control of robot, running all reanimator routines, leaving/returning to charger, changing UI color schemes
 
 0.9.8-beta.1
