@@ -21,8 +21,7 @@ after satisfying the requirements above and downloading the file: in vectrix.py,
 
 # Main features
 - built to run 24/7 in console UI or headless mode while using few resources
-- monitors and logs Vector's sensor data and other telemetry to console or file or webhooks (Discord etc)
-- logging to screen, file, or webhook
+- monitors and logs Vector's sensor data and other telemetry to console, file or webhooks (Discord etc)
 - ability to remote control Vector and initiate specific actions (pop wheelie, roll cube, etc)
 - battery profiling: log voltages to csv file, records charge/discharge cycle times
 - optionally forces Vector off the charger if the battery is fully charged (after a configurable time, and on a schedule if desired)
