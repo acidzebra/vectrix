@@ -2,6 +2,13 @@ Changelog
 
 note: earlier versions of VecTrix (named VectorDiag) are available here: https://gist.github.com/acidzebra/74d7b288b267d7fcea8c33358d4c2e78
 
+0.9.9-beta.1
+- added some extra guard rails and checks to functions throughout
+- moved some duplicated code to separate functions (robot_random_turn and robot_check_free space)
+- polished up some reanimator stuff
+- additional keyboard switches, I for infinite/endless reanimator, volume controls, maybe others? (press H for help)
+- removed color customization from main config switches (as now integrated in themes)
+
 0.9.8-beta.4
 - The Great Variable Rewrite: rewrote a bunch of variables as proper booleans to improve legibility and my sanity
 - moved some function blocks around for consistency
